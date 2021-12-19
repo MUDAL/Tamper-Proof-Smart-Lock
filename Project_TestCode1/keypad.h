@@ -3,7 +3,9 @@
 
 #define NUMBER_OF_ROWS      4
 #define NUMBER_OF_COLUMNS   4
-#define MAX_PASSWORD_LEN  20
+#ifndef MAX_PASSWORD_LEN
+#define MAX_PASSWORD_LEN    20
+#endif
 
 enum PasswordStates
 {

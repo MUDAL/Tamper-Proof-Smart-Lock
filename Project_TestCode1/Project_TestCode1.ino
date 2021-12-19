@@ -37,7 +37,6 @@ void setup()
 
 void loop() 
 {
-  //GetBluetoothData(bluetoothBuffer);
   char key = keypad.GetChar();
   if(key == '*')
   {
