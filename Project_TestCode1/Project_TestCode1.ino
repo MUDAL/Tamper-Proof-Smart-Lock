@@ -37,12 +37,30 @@ void setup()
 
 void loop() 
 {
+  //Bluetooth
+  GetBluetoothData(bluetoothBuffer);
+  if(strcmp(bluetoothBuffer,"\0") != 0)
+  {
+    if(strcmp(bluetoothBuffer,bluetoothSDBuffer) == 0)
+    {
+      Serial.println("Password is correct");
+    }
+    /*else if(strcmp(bluetoothBuffer,"Read") == 0)
+    {
+    }*/
+    else
+    {
+      Serial.println("Incorrect password");
+    }
+    memset(bluetoothBuffer,'\0',MAX_BT_SERIAL_LEN);
+  }
+  //Keypad
   char key = keypad.GetChar();
   if(key == '*')
   {
     Serial.println("Entering password mode");
     keypad.GetPassword(keypadBuffer);
-    if(!strcmp(keypadBuffer,keypadSDBuffer))
+    if(strcmp(keypadBuffer,keypadSDBuffer) == 0)
     {
       Serial.println("Password is correct");
     }
