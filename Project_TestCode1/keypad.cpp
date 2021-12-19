@@ -79,3 +79,51 @@ char Keypad::GetChar(void)
   }
   return '\0';
 }
+
+void Keypad::GetPassword(char* keyBuffer)
+{
+  int i = 0;
+  while(1)
+  {
+    char key = Keypad::GetChar();
+    switch(key)
+    {
+      case '\0':
+        break;
+      case '#':
+        keyBuffer[i] = '\0';
+        return;
+      default:
+        if(i < MAX_PASSWORD_LEN)
+        {
+          keyBuffer[i] = key;
+          i++;
+        }
+        break;
+    }
+  }  
+}
+
+int Keypad::RetryPassword(char* keyBuffer,char* sdBuffer)
+{
+  int passwordState = DEF;
+  int retry = 1;
+  while(retry <= 2)
+  {
+    Serial.print("Retry: ");
+    Serial.println(retry);
+    Keypad::GetPassword(keyBuffer);
+    retry++;
+    if(!strcmp(keyBuffer,sdBuffer))
+    {
+      passwordState = PASSWORD_CORRECT;
+      break;
+    }
+    else
+    {
+      passwordState = PASSWORD_INCORRECT;
+    }
+  }
+  return passwordState;   
+}
+

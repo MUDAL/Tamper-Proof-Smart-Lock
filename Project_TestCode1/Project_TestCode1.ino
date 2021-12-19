@@ -11,7 +11,7 @@
 
 #include "sd_card.h"
 #include "communication.h"
-#include "keypad_password.h"
+#include "keypad.h"
 
 //Password buffers
 char keypadBuffer[MAX_PASSWORD_LEN] = {0};
@@ -42,7 +42,7 @@ void loop()
   if(key == '*')
   {
     Serial.println("Entering password mode");
-    GetKeypadPassword(keypadBuffer);
+    keypad.GetPassword(keypadBuffer);
     if(!strcmp(keypadBuffer,keypadSDBuffer))
     {
       Serial.println("Password is correct");
@@ -50,7 +50,7 @@ void loop()
     else
     {
       Serial.println("Incorrect password, 2 attempts left");
-      int retry = RetryKeypadPassword(keypadBuffer,keypadSDBuffer);
+      int retry = keypad.RetryPassword(keypadBuffer,keypadSDBuffer);
       if(retry == PASSWORD_CORRECT)
       {
         Serial.println("Password is now correct");

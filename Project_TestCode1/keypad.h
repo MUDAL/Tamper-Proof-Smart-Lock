@@ -3,6 +3,14 @@
 
 #define NUMBER_OF_ROWS      4
 #define NUMBER_OF_COLUMNS   4
+#define MAX_PASSWORD_LEN  20
+
+enum PasswordStates
+{
+  DEF = 0, //Default
+  PASSWORD_CORRECT,
+  PASSWORD_INCORRECT
+};
 
 class Keypad
 {
@@ -16,6 +24,8 @@ class Keypad
   public:
     Keypad(int* pRowPins,int* pColPins);
     char GetChar(void);
+    void GetPassword(char* keyBuffer);
+    int RetryPassword(char* keyBuffer,char* sdBuffer);
 };
 
 #endif //KEYPAD_H
