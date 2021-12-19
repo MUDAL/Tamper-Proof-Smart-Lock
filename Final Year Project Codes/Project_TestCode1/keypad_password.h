@@ -1,8 +1,7 @@
-#ifndef PASSWORD_H
-#define PASSWORD_H
+#ifndef KEYPAD_PASSWORD_H
+#define KEYPAD_PASSWORD_H
 
 #include "keypad.h"
-#include "BluetoothSerial.h"
 
 #ifndef MAX_PASSWORD_LEN
 #define MAX_PASSWORD_LEN  20
@@ -16,10 +15,8 @@ enum PasswordStates
 };
 
 extern Keypad keypad;
-extern BluetoothSerial SerialBT;
 extern void GetKeypadPassword(char* keypadBuffer);
-extern void GetBluetoothPassword(char* bluetoothBuffer);
 extern int RetryKeypadPassword(char* keypadBuffer, char* keypadSDBuffer);
 
-#endif //PASSWORD_H
+#endif //KEYPAD_PASSWORD_H
 

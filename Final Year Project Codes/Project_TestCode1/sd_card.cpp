@@ -1,7 +1,7 @@
 #include <Arduino.h>
-#include "sdCard.h"
+#include "sd_card.h"
 
-void ReadFile(fs::FS &fs, const char* path, char* readBuffer)
+void SD_ReadFile(fs::FS &fs, const char* path, char* readBuffer)
 {
   int i = 0;
   File file = fs.open(path);
@@ -17,14 +17,14 @@ void ReadFile(fs::FS &fs, const char* path, char* readBuffer)
   file.close();
 }
 
-void WriteFile(fs::FS &fs, const char* path, const char* message)
+void SD_WriteFile(fs::FS &fs, const char* path, const char* message)
 {
   File file = fs.open(path, FILE_WRITE);
   file.print(message);
   file.close();
 }
 
-void AppendFile(fs::FS &fs, const char* path, const char* message)
+void SD_AppendFile(fs::FS &fs, const char* path, const char* message)
 {
   File file = fs.open(path, FILE_APPEND);
   file.print(message);

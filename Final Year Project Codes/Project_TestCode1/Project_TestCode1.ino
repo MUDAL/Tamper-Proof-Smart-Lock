@@ -9,14 +9,14 @@
  * 4.If the password is incorrect after all 3 attempts, SendSMS("Intruder")
 */
 
-#include "sdCard.h"
-#include "gsm.h"
-#include "password.h"
+#include "sd_card.h"
+#include "communication.h"
+#include "keypad_password.h"
 
 //Password buffers
 char keypadBuffer[MAX_PASSWORD_LEN] = {0};
 char keypadSDBuffer[MAX_PASSWORD_LEN] = {0};
-char bluetoothBuffer[MAX_PASSWORD_LEN] = {0};
+char bluetoothBuffer[MAX_BT_SERIAL_LEN] = {0};
 char bluetoothSDBuffer[MAX_PASSWORD_LEN] = {0};
 //Keypad
 int rowPins[NUMBER_OF_ROWS] = {16,22,32,33};
@@ -31,13 +31,13 @@ void setup()
   Serial2.begin(9600,SERIAL_8N1,-1,17); //for SIM800L
   SerialBT.begin("Smart Door");
   SD.begin(); //Uses pins 23,19,18 and 5
-  ReadFile(SD,"/kp.txt",keypadSDBuffer);
-  ReadFile(SD,"/bt.txt",bluetoothSDBuffer);
+  SD_ReadFile(SD,"/kp.txt",keypadSDBuffer);
+  SD_ReadFile(SD,"/bt.txt",bluetoothSDBuffer);
 }
 
 void loop() 
 {
-  //GetBluetoothPassword(bluetoothBuffer);
+  //GetBluetoothData(bluetoothBuffer);
   char key = keypad.GetChar();
   if(key == '*')
   {

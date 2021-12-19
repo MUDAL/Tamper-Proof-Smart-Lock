@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "password.h"
+#include "keypad_password.h"
 
 void GetKeypadPassword(char* keypadBuffer)
 {
@@ -23,32 +23,6 @@ void GetKeypadPassword(char* keypadBuffer)
         break;
     }
   }
-}
-
-void GetBluetoothPassword(char* bluetoothBuffer)
-{
-  int i = 0;
-  bool bufferCleared = false;
-  char clearSerialBT = '\0';
-  while(SerialBT.available() > 0)
-  {
-    if(!bufferCleared)
-    {
-      memset(bluetoothBuffer,'\0',MAX_PASSWORD_LEN);
-      bufferCleared = true;
-    }
-    if(i < MAX_PASSWORD_LEN)
-    {
-      bluetoothBuffer[i] = SerialBT.read();
-    }
-    else
-    {
-      clearSerialBT = SerialBT.read();
-    }
-    i++;
-  }
-  Serial.print("Bluetooth data = ");
-  Serial.println(bluetoothBuffer);
 }
 
 int RetryKeypadPassword(char* keypadBuffer, char* keypadSDBuffer)
