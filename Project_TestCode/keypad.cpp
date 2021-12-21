@@ -80,7 +80,7 @@ char Keypad::GetChar(void)
   return '\0';
 }
 
-void Keypad::GetPassword(char* keyBuffer)
+void Keypad::GetData(char* keyBuffer)
 {
   int i = 0;
   while(1)
@@ -112,7 +112,7 @@ int Keypad::RetryPassword(char* keyBuffer,char* password)
   {
     Serial.print("Retry: ");
     Serial.println(retry);
-    Keypad::GetPassword(keyBuffer);
+    Keypad::GetData(keyBuffer);
     retry++;
     if(strcmp(keyBuffer,password) == 0)
     {
