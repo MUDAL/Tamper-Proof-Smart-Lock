@@ -27,7 +27,7 @@ class Keypad
     Keypad(int* pRowPins,int* pColPins);
     char GetChar(void);
     void GetPassword(char* keyBuffer);
-    int RetryPassword(char* keyBuffer,char* sdBuffer);
+    int RetryPassword(char* keyBuffer,char* password);
 };
 
 #endif //KEYPAD_H

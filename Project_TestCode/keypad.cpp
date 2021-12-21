@@ -104,7 +104,7 @@ void Keypad::GetPassword(char* keyBuffer)
   }  
 }
 
-int Keypad::RetryPassword(char* keyBuffer,char* sdBuffer)
+int Keypad::RetryPassword(char* keyBuffer,char* password)
 {
   int passwordState = DEF;
   int retry = 1;
@@ -114,7 +114,7 @@ int Keypad::RetryPassword(char* keyBuffer,char* sdBuffer)
     Serial.println(retry);
     Keypad::GetPassword(keyBuffer);
     retry++;
-    if(!strcmp(keyBuffer,sdBuffer))
+    if(strcmp(keyBuffer,password) == 0)
     {
       passwordState = PASSWORD_CORRECT;
       break;
