@@ -31,7 +31,6 @@ void setup()
   Serial.print("Keypad password:");
   Serial.println(keypadSDBuffer);
   SD_ReadFile(SD,"/bt.txt",bluetoothSDBuffer);
-  //SendSMS("+2349058041373","What's up my friend!!!!!!!!!!!!");
 }
 
 void loop() 
