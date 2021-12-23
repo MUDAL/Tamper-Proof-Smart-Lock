@@ -1,7 +1,14 @@
 #include "sd_card.h"
 #include "communication.h"
 #include "keypad.h"
-
+//Password states
+enum 
+{
+  DEF = 0, //Default
+  PASSWORD_CORRECT,
+  PASSWORD_INCORRECT
+};
+//Buffers
 char keypadBuffer[MAX_PASSWORD_LEN] = {0};
 char keypadSDBuffer[MAX_PASSWORD_LEN] = {0};
 char bluetoothBuffer[MAX_BT_SERIAL_LEN] = {0};
@@ -15,7 +22,9 @@ BluetoothSerial SerialBT;
 
 //Functions
 void ProcessBluetoothData(void);
+void GetKeypadData(char* keyBuffer);
 void InputPassword(void);
+int RetryPassword(char* keyBuffer,char* password);
 void InputNewPassword(void);
 void ChangePassword(void);
 void InputPhoneNumber(void);
@@ -74,11 +83,35 @@ void ProcessBluetoothData(void)
   }  
 }
 
+void GetKeypadData(char* keyBuffer)
+{
+  int i = 0;
+  while(1)
+  {
+    char key = keypad.GetChar();
+    switch(key)
+    {
+      case '\0':
+        break;
+      case '#':
+        keyBuffer[i] = '\0';
+        return;
+      default:
+        if(i < MAX_PASSWORD_LEN)
+        {
+          keyBuffer[i] = key;
+          i++;
+        }
+        break;
+    }
+  }  
+}
+
 void InputPassword(void)
 {
   char countryCodePhoneNo[15] = {0};
   Serial.println("Entering password mode");
-  keypad.GetData(keypadBuffer);
+  GetKeypadData(keypadBuffer);
   if(strcmp(keypadBuffer,keypadSDBuffer) == 0)
   {
     Serial.println("Password is correct");
@@ -87,7 +120,7 @@ void InputPassword(void)
   else
   {
     Serial.println("Incorrect password, 2 attempts left");
-    int retry = keypad.RetryPassword(keypadBuffer,keypadSDBuffer);
+    int retry = RetryPassword(keypadBuffer,keypadSDBuffer);
     switch(retry)
     {
       case PASSWORD_CORRECT:
@@ -103,13 +136,36 @@ void InputPassword(void)
   }
 }
 
+int RetryPassword(char* keyBuffer,char* password)
+{
+  int passwordState = DEF;
+  int retry = 1;
+  while(retry <= 2)
+  {
+    Serial.print("Retry: ");
+    Serial.println(retry);
+    GetKeypadData(keyBuffer);
+    retry++;
+    if(strcmp(keyBuffer,password) == 0)
+    {
+      passwordState = PASSWORD_CORRECT;
+      break;
+    }
+    else
+    {
+      passwordState = PASSWORD_INCORRECT;
+    }
+  }
+  return passwordState;   
+}
+
 void InputNewPassword(void)
 {
   char newPassword[MAX_PASSWORD_LEN] = {0};
-  keypad.GetData(keypadBuffer);
+  GetKeypadData(keypadBuffer);
   strcpy(newPassword,keypadBuffer);
   Serial.println("Reenter the new password");
-  keypad.GetData(keypadBuffer);
+  GetKeypadData(keypadBuffer);
   if(strcmp(keypadBuffer,newPassword) == 0)
   {
     Serial.println("New password successfully created");
@@ -119,7 +175,7 @@ void InputNewPassword(void)
   else
   {
     Serial.println("Incorrect input, 2 attempts left");
-    int retry = keypad.RetryPassword(keypadBuffer,newPassword);
+    int retry = RetryPassword(keypadBuffer,newPassword);
     switch(retry)
     {
       case PASSWORD_CORRECT:
@@ -138,7 +194,7 @@ void ChangePassword(void)
 {
   char countryCodePhoneNo[15] = {0};
   Serial.println("Enter previous password");
-  keypad.GetData(keypadBuffer);
+  GetKeypadData(keypadBuffer);
   if(strcmp(keypadBuffer,keypadSDBuffer) == 0)
   {
     Serial.println("Correct, now enter new password");
@@ -147,7 +203,7 @@ void ChangePassword(void)
   else
   {
     Serial.println("Incorrect password, 2 attempts left");
-    int retry = keypad.RetryPassword(keypadBuffer,keypadSDBuffer);
+    int retry = RetryPassword(keypadBuffer,keypadSDBuffer);
     switch(retry)
     {
       case PASSWORD_CORRECT:
@@ -168,7 +224,7 @@ void InputPhoneNumber(void)
   Serial.println("Enter phone number");
   char phoneNumber[12] = {0};
   char countryCodePhoneNo[15] = {0};
-  keypad.GetData(phoneNumber);
+  GetKeypadData(phoneNumber);
   GetCountryCodePhoneNo(countryCodePhoneNo,phoneNumber);
   Serial.print("Phone number:");
   Serial.println(countryCodePhoneNo);
@@ -179,7 +235,7 @@ void AddPhoneNumber(void)
 {
   char countryCodePhoneNo[15] = {0};
   Serial.println("Enter the password");
-  keypad.GetData(keypadBuffer);
+  GetKeypadData(keypadBuffer);
   if(strcmp(keypadBuffer,keypadSDBuffer) == 0)
   {
     Serial.println("Password is correct");
@@ -188,7 +244,7 @@ void AddPhoneNumber(void)
   else
   {
     Serial.println("Incorrect password, 2 attempts left");
-    int retry = keypad.RetryPassword(keypadBuffer,keypadSDBuffer);
+    int retry = RetryPassword(keypadBuffer,keypadSDBuffer);
     switch(retry)
     {
       case PASSWORD_CORRECT:
