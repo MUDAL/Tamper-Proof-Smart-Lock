@@ -1,6 +1,32 @@
+#include <Wire.h>
+#include "RTClib.h" //Version 1.3.3
 #include "sd_card.h"
 #include "communication.h"
 #include "keypad.h"
+
+/*
+ * Components:
+ * ESP32 inbuilt bluetooth --> Bluetooth serial
+ * Keypad --> GPIO
+ * SD card [+3.3v power] --> SPI
+ * RTC module [+3.3v power] --> I2C
+ * GSM module [External 4.3v power] --> UART
+ * Fingerprint scanner --> UART
+ * Button(s)
+ * LED(s)
+ * Buzzer
+ * Electromagnetic lock
+ * 
+ * Helpful libraries:
+ * Wire.h
+ * RTClib.h
+ * DateTime
+ * SPI.h
+ * SD.h
+ * FS.h
+ * BluetoothSerial.h
+*/
+
 //Password states
 enum 
 {
@@ -17,9 +43,10 @@ char bluetoothSDBuffer[MAX_PASSWORD_LEN] = {0};
 int rowPins[NUMBER_OF_ROWS] = {16,22,32,33};
 int columnPins[NUMBER_OF_COLUMNS] = {25,26,27,14};
 Keypad keypad(rowPins,columnPins);
+//Real-time clock
+RTC_DS3231 rtc;
 //Bluetooth
 BluetoothSerial SerialBT;
-
 //Functions
 void ProcessBluetoothData(void);
 void GetKeypadData(char* keyBuffer);
@@ -32,6 +59,8 @@ void AddPhoneNumber(void);
 
 void setup() 
 {
+  setCpuFrequencyMhz(80);
+  Wire.begin(21,4); //SDA pin, SCL pin
   Serial.begin(115200);
   Serial2.begin(9600,SERIAL_8N1,-1,17); //for SIM800L
   SerialBT.begin("Smart Door");
@@ -43,7 +72,7 @@ void setup()
 }
 
 void loop() 
-{
+{  
   //Bluetooth
   ProcessBluetoothData();
   //Keypad
@@ -69,12 +98,18 @@ void ProcessBluetoothData(void)
   {
     if(strcmp(bluetoothBuffer,bluetoothSDBuffer) == 0)
     {
+      /*
+       * Features to be added here:
+       * The if statement executes if the password from the app is valid.
+       * In body of this if statement, place the logic to handle communication...
+       * between the app and the smart door lock. e.g.
+       *   1.Now that password is correct, send "open" from the app to open the door
+       *   2.Using the app to check when the door was opened/closed
+       *   3.Using the app to check whether the door lock's time is correct and set it if incorrect
+      */
       Serial.println("Password is correct");
       Serial.println("Door Open");
     }
-    /*else if(strcmp(bluetoothBuffer,"Read") == 0)
-    {
-    }*/
     else
     {
       Serial.println("Incorrect password");
