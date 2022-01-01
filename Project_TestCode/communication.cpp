@@ -1,6 +1,12 @@
 #include <Arduino.h>
 #include "communication.h"
 
+/*
+ * @brief Sends an SMS to a specified phone number.
+ * @param phoneNumber: number the SMS will be sent to.
+ * @param message: SMS to be sent.
+ * @return None
+*/
 void SendSMS(char* phoneNumber,char* message)
 {
   char AT_CMGS_Command[27] = "AT+CMGS=\"";
@@ -16,6 +22,13 @@ void SendSMS(char* phoneNumber,char* message)
   delay(500);
 }
 
+/*
+ * @brief Gets country code representation of a phone number.
+ * @example 08012312311(normal form) --> +2348012312311(country code)
+ * @param countryCodePhoneNo: country code phone number
+ * @param phoneNumber: phone number in normal form
+ * @return None
+*/
 void GetCountryCodePhoneNo(char* countryCodePhoneNo,char* phoneNumber)
 {
   const char countryCode[5] = "+234";
@@ -29,25 +42,24 @@ void GetCountryCodePhoneNo(char* countryCodePhoneNo,char* phoneNumber)
   }
 }
 
-void GetBluetoothData(char* bluetoothBuffer)
+/*
+ * @brief Gets data from a bluetooth device and stores in a buffer.
+ * @param bluetoothBuffer: Buffer to store the data received via bluetooth.
+ * @param maxLen: maximum permissible length of data to be received.
+ * @return None
+*/
+void GetBluetoothData(char* bluetoothBuffer,int maxLen)
 {
   int i = 0;
-  bool bufferCleared = false;
-  char clearSerialBT = '\0';
   while(SerialBT.available() > 0)
   {
-    if(!bufferCleared)
-    {
-      memset(bluetoothBuffer,'\0',MAX_BT_SERIAL_LEN);
-      bufferCleared = true;
-    }
-    if(i < MAX_BT_SERIAL_LEN)
+    if(i < maxLen)
     {
       bluetoothBuffer[i] = SerialBT.read();
     }
     else
-    {
-      clearSerialBT = SerialBT.read();
+    {//removes leftover bytes from SerialBT buffer
+      char clearSerialBT = SerialBT.read(); 
     }
     i++;
   }

@@ -7,6 +7,12 @@ const char keypadMatrix[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS] =
  {'7','8','9','C'},
  {'*','0','#','D'}};
 
+/*
+ * @brief Selects a row of the keypad whose columns will be read
+ * @param pinIndex: Index of the row to be selected.
+ * @example The first row has an index of 0, the second has an index of 1 etc.
+ * @return None
+*/
 void Keypad::SelectRow(int pinIndex)
 {
   for(int i = 0; i < NUMBER_OF_ROWS; i++)
@@ -22,6 +28,12 @@ void Keypad::SelectRow(int pinIndex)
   }
 }
 
+/*
+ * @brief Checks if a key(column) on the keypad is free from bouncing
+ * @param pinIndex: Index of the column/input 
+ * @example The first column has an index of 0, the second has an index of 1 etc.
+ * @return True if the column has been debounced and false if otherwise
+*/
 bool Keypad::IsDebounced(int pinIndex)
 {
   if(digitalRead(pCol[pinIndex]) == LOW)
@@ -35,6 +47,12 @@ bool Keypad::IsDebounced(int pinIndex)
   return false;
 }
 
+/*
+ * @brief Initializes an object of the keypad class
+ * @param pRowPins: starting address of the array of pins for the keypad's rows
+ * @param pColPins: starting address of the array of pins for the keypad's columns
+ * @return None
+*/
 Keypad::Keypad(int* pRowPins,int* pColPins)
 {
   //Initialize private variables
@@ -59,6 +77,11 @@ Keypad::Keypad(int* pRowPins,int* pColPins)
   }
 }
 
+/*
+ * @brief Gets the character corresponding to the pressed key on the keypad
+ * @param None
+ * @return character e.g. '*' if * is pressed, 'A' if A is pressed, etc.
+*/
 char Keypad::GetChar(void)
 {
   for(int i = 0; i < NUMBER_OF_ROWS; i++)

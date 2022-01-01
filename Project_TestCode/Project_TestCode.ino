@@ -12,11 +12,13 @@
  * RTC module [+3.3v power] --> I2C --> [pins: 21(SDA),4(SCL)]
  * GSM module [External 4.3v power] --> UART --> [UART2 Tx pin: 17]
  * Fingerprint scanner --> UART --> [UART1 pins: 9,10]
- * Button(s)
+ * Indoor button to open the door --> GPIO Interrupt -->
+ * Indoor button to close the door --> GPIO Interrupt -->
+ * Outdoor button to close the door --> GPIO Interrupt -->
+ * Electromagnetic lock
+ * IR sensor --> GPIO -->
  * LED(s)
  * Buzzer
- * Electromagnetic lock
- * IR sensor
  * 
  * Helpful libraries:
  * Wire.h
@@ -35,19 +37,16 @@ enum
   PASSWORD_CORRECT,
   PASSWORD_INCORRECT
 };
-//Buffers
-char keypadBuffer[MAX_PASSWORD_LEN] = {0};
-char keypadSDBuffer[MAX_PASSWORD_LEN] = {0};
-char bluetoothBuffer[MAX_BT_SERIAL_LEN] = {0};
-char bluetoothSDBuffer[MAX_PASSWORD_LEN] = {0};
-//Keypad
-int rowPins[NUMBER_OF_ROWS] = {16,22,32,33};
+
+//Variables
+BluetoothSerial SerialBT; 
+RTC_DS3231 rtc; 
+char keypadSDBuffer[MAX_PASSWORD_LEN] = {0}; //Stored keypad password
+char bluetoothSDBuffer[MAX_PASSWORD_LEN] = {0}; //Stored bluetooth password
+int rowPins[NUMBER_OF_ROWS] = {16,22,32,33};  
 int columnPins[NUMBER_OF_COLUMNS] = {25,26,27,14};
-Keypad keypad(rowPins,columnPins);
-//Real-time clock
-RTC_DS3231 rtc;
-//Bluetooth
-BluetoothSerial SerialBT;
+Keypad keypad(rowPins,columnPins); 
+
 //Functions
 void ProcessBluetoothData(void);
 void GetKeypadData(char* keyBuffer);
@@ -70,6 +69,8 @@ void setup()
   Serial.print("Keypad password:");
   Serial.println(keypadSDBuffer);
   SD_ReadFile(SD,"/bt.txt",bluetoothSDBuffer);
+  Serial.print("Bluetooth password:");
+  Serial.println(bluetoothSDBuffer);
 }
 
 void loop() 
@@ -94,29 +95,36 @@ void loop()
 
 void ProcessBluetoothData(void)
 {
-  GetBluetoothData(bluetoothBuffer);
+  char bluetoothBuffer[MAX_BT_SERIAL_LEN] = {0};
+  GetBluetoothData(bluetoothBuffer,MAX_BT_SERIAL_LEN);
   if(strcmp(bluetoothBuffer,"\0") != 0)
   {
+    Serial.print("Received data = ");
+    Serial.println(bluetoothBuffer);
     if(strcmp(bluetoothBuffer,bluetoothSDBuffer) == 0)
     {
-      /*
-       * Features to be added here:
-       * The if statement executes if the password from the app is valid.
-       * In body of this if statement, place the logic to handle communication...
-       * between the app and the smart door lock. e.g.
-       *   1.Now that password is correct, send "open" from the app to open the door
-       *   2.Using the app to check when the door was opened/closed
-       *   3.Using the app to check whether the door lock's time is correct and set it if incorrect
-       *   4.Using the app to change the passowrd
-      */
-      Serial.println("Password is correct");
-      Serial.println("Door Open");
+      SerialBT.print("\nSmart lock request codes:" 
+                      "\n1. To open the door"
+                      "\n2."
+                      "\n");
+      char requestCode = '\0';
+      while(1)
+      {
+        GetBluetoothData(&requestCode,1);
+        if(requestCode != '\0') break;
+      }
+      switch(requestCode)
+      {
+        case '1':
+          Serial.println("Password is correct");
+          Serial.println("Door Open");
+          break;
+      }
     }
     else
     {
       Serial.println("Incorrect password");
     }
-    memset(bluetoothBuffer,'\0',MAX_BT_SERIAL_LEN);
   }  
 }
 
@@ -146,6 +154,7 @@ void GetKeypadData(char* keyBuffer)
 
 void InputPassword(void)
 {
+  char keypadBuffer[MAX_PASSWORD_LEN] = {0};
   char countryCodePhoneNo[15] = {0};
   Serial.println("Entering password mode");
   GetKeypadData(keypadBuffer);
@@ -198,6 +207,7 @@ int RetryPassword(char* keyBuffer,char* password)
 
 void InputNewPassword(void)
 {
+  char keypadBuffer[MAX_PASSWORD_LEN] = {0};
   char newPassword[MAX_PASSWORD_LEN] = {0};
   GetKeypadData(keypadBuffer);
   strcpy(newPassword,keypadBuffer);
@@ -229,6 +239,7 @@ void InputNewPassword(void)
 
 void ChangePassword(void)
 {
+  char keypadBuffer[MAX_PASSWORD_LEN] = {0};
   char countryCodePhoneNo[15] = {0};
   Serial.println("Enter previous password");
   GetKeypadData(keypadBuffer);
@@ -270,6 +281,7 @@ void InputPhoneNumber(void)
 
 void AddPhoneNumber(void)
 {
+  char keypadBuffer[MAX_PASSWORD_LEN] = {0};
   char countryCodePhoneNo[15] = {0};
   Serial.println("Enter the password");
   GetKeypadData(keypadBuffer);
