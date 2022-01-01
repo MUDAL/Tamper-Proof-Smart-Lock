@@ -7,15 +7,16 @@
 /*
  * Components:
  * ESP32 inbuilt bluetooth --> Bluetooth serial
- * Keypad --> GPIO
- * SD card [+3.3v power] --> SPI
- * RTC module [+3.3v power] --> I2C
- * GSM module [External 4.3v power] --> UART
- * Fingerprint scanner --> UART
+ * Keypad --> GPIO --> [(row pins: 16,22,32,33), (column pins: 25,26,27,14)]
+ * SD card [+3.3v power] --> SPI --> [SPI pins: 23,19,18,5]
+ * RTC module [+3.3v power] --> I2C --> [pins: 21(SDA),4(SCL)]
+ * GSM module [External 4.3v power] --> UART --> [UART2 Tx pin: 17]
+ * Fingerprint scanner --> UART --> [UART1 pins: 9,10]
  * Button(s)
  * LED(s)
  * Buzzer
  * Electromagnetic lock
+ * IR sensor
  * 
  * Helpful libraries:
  * Wire.h
@@ -106,6 +107,7 @@ void ProcessBluetoothData(void)
        *   1.Now that password is correct, send "open" from the app to open the door
        *   2.Using the app to check when the door was opened/closed
        *   3.Using the app to check whether the door lock's time is correct and set it if incorrect
+       *   4.Using the app to change the passowrd
       */
       Serial.println("Password is correct");
       Serial.println("Door Open");
