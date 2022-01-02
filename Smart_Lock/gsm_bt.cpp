@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "communication.h"
+#include "gsm_bt.h"
 
 /*
  * @brief Sends an SMS to a specified phone number.

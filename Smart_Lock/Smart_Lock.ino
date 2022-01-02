@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include "RTClib.h" //Version 1.3.3
 #include "sd_card.h"
-#include "communication.h"
+#include "gsm_bt.h"
 #include "keypad.h"
 
 /*
@@ -31,18 +31,16 @@
 */
 
 //Password states
-enum 
+typedef enum 
 {
-  DEF = 0, //Default
-  PASSWORD_CORRECT,
-  PASSWORD_INCORRECT
-};
+  PASSWORD_INCORRECT = 0,
+  PASSWORD_CORRECT
+}pw_s;
 
 //Variables
 BluetoothSerial SerialBT; 
 RTC_DS3231 rtc; 
-char keypadSDBuffer[MAX_PASSWORD_LEN] = {0}; //Stored keypad password
-char bluetoothSDBuffer[MAX_PASSWORD_LEN] = {0}; //Stored bluetooth password
+char pswdSDBuffer[MAX_PASSWORD_LEN] = {0}; //Stored passwod
 int rowPins[NUMBER_OF_ROWS] = {16,22,32,33};  
 int columnPins[NUMBER_OF_COLUMNS] = {25,26,27,14};
 Keypad keypad(rowPins,columnPins); 
@@ -51,7 +49,7 @@ Keypad keypad(rowPins,columnPins);
 void ProcessBluetoothData(void);
 void GetKeypadData(char* keyBuffer);
 void InputPassword(void);
-int RetryPassword(char* keyBuffer,char* password);
+pw_s RetryPassword(char* keyBuffer,char* password);
 void InputNewPassword(void);
 void ChangePassword(void);
 void InputPhoneNumber(void);
@@ -65,12 +63,9 @@ void setup()
   Serial2.begin(9600,SERIAL_8N1,-1,17); //for SIM800L
   SerialBT.begin("Smart Door");
   SD.begin(); //Uses pins 23,19,18 and 5
-  SD_ReadFile(SD,"/kp.txt",keypadSDBuffer);
-  Serial.print("Keypad password:");
-  Serial.println(keypadSDBuffer);
-  SD_ReadFile(SD,"/bt.txt",bluetoothSDBuffer);
-  Serial.print("Bluetooth password:");
-  Serial.println(bluetoothSDBuffer);
+  SD_ReadFile(SD,"/pw.txt",pswdSDBuffer);
+  Serial.print("password:");
+  Serial.println(pswdSDBuffer);
 }
 
 void loop() 
@@ -101,7 +96,7 @@ void ProcessBluetoothData(void)
   {
     Serial.print("Received data = ");
     Serial.println(bluetoothBuffer);
-    if(strcmp(bluetoothBuffer,bluetoothSDBuffer) == 0)
+    if(strcmp(bluetoothBuffer,pswdSDBuffer) == 0)
     {
       SerialBT.print("\nSmart lock request codes:" 
                       "\n1. To open the door"
@@ -158,7 +153,7 @@ void InputPassword(void)
   char countryCodePhoneNo[15] = {0};
   Serial.println("Entering password mode");
   GetKeypadData(keypadBuffer);
-  if(strcmp(keypadBuffer,keypadSDBuffer) == 0)
+  if(strcmp(keypadBuffer,pswdSDBuffer) == 0)
   {
     Serial.println("Password is correct");
     Serial.println("Door Open");
@@ -166,8 +161,8 @@ void InputPassword(void)
   else
   {
     Serial.println("Incorrect password, 2 attempts left");
-    int retry = RetryPassword(keypadBuffer,keypadSDBuffer);
-    switch(retry)
+    pw_s pswdState = RetryPassword(keypadBuffer,pswdSDBuffer);
+    switch(pswdState)
     {
       case PASSWORD_CORRECT:
         Serial.println("Password is now correct");
@@ -182,9 +177,9 @@ void InputPassword(void)
   }
 }
 
-int RetryPassword(char* keyBuffer,char* password)
+pw_s RetryPassword(char* keyBuffer,char* password)
 {
-  int passwordState = DEF;
+  pw_s passwordState = PASSWORD_INCORRECT;
   int retry = 1;
   while(retry <= 2)
   {
@@ -196,10 +191,6 @@ int RetryPassword(char* keyBuffer,char* password)
     {
       passwordState = PASSWORD_CORRECT;
       break;
-    }
-    else
-    {
-      passwordState = PASSWORD_INCORRECT;
     }
   }
   return passwordState;   
@@ -216,19 +207,19 @@ void InputNewPassword(void)
   if(strcmp(keypadBuffer,newPassword) == 0)
   {
     Serial.println("New password successfully created");
-    strcpy(keypadSDBuffer,keypadBuffer);
-    SD_WriteFile(SD,"/kp.txt",keypadBuffer);
+    strcpy(pswdSDBuffer,keypadBuffer);
+    SD_WriteFile(SD,"/pw.txt",pswdSDBuffer);
   }
   else
   {
     Serial.println("Incorrect input, 2 attempts left");
-    int retry = RetryPassword(keypadBuffer,newPassword);
-    switch(retry)
+    pw_s pswdState = RetryPassword(keypadBuffer,newPassword);
+    switch(pswdState)
     {
       case PASSWORD_CORRECT:
         Serial.println("New password successfully created");
-        strcpy(keypadSDBuffer,keypadBuffer);
-        SD_WriteFile(SD,"/kp.txt",keypadBuffer);
+        strcpy(pswdSDBuffer,keypadBuffer);
+        SD_WriteFile(SD,"/pw.txt",keypadBuffer);
         break;
       case PASSWORD_INCORRECT:
         Serial.println("Unable to create new password");
@@ -243,7 +234,7 @@ void ChangePassword(void)
   char countryCodePhoneNo[15] = {0};
   Serial.println("Enter previous password");
   GetKeypadData(keypadBuffer);
-  if(strcmp(keypadBuffer,keypadSDBuffer) == 0)
+  if(strcmp(keypadBuffer,pswdSDBuffer) == 0)
   {
     Serial.println("Correct, now enter new password");
     InputNewPassword();
@@ -251,8 +242,8 @@ void ChangePassword(void)
   else
   {
     Serial.println("Incorrect password, 2 attempts left");
-    int retry = RetryPassword(keypadBuffer,keypadSDBuffer);
-    switch(retry)
+    pw_s pswdState = RetryPassword(keypadBuffer,pswdSDBuffer);
+    switch(pswdState)
     {
       case PASSWORD_CORRECT:
         Serial.println("Correct, now enter new password");
@@ -285,7 +276,7 @@ void AddPhoneNumber(void)
   char countryCodePhoneNo[15] = {0};
   Serial.println("Enter the password");
   GetKeypadData(keypadBuffer);
-  if(strcmp(keypadBuffer,keypadSDBuffer) == 0)
+  if(strcmp(keypadBuffer,pswdSDBuffer) == 0)
   {
     Serial.println("Password is correct");
     InputPhoneNumber();
@@ -293,8 +284,8 @@ void AddPhoneNumber(void)
   else
   {
     Serial.println("Incorrect password, 2 attempts left");
-    int retry = RetryPassword(keypadBuffer,keypadSDBuffer);
-    switch(retry)
+    pw_s pswdState = RetryPassword(keypadBuffer,pswdSDBuffer);
+    switch(pswdState)
     {
       case PASSWORD_CORRECT:
         Serial.println("Password is correct");
