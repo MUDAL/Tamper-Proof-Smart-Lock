@@ -12,13 +12,13 @@
  * RTC module [+3.3v power] --> I2C --> [pins: 21(SDA),4(SCL)]
  * GSM module [External 4.3v power] --> UART --> [UART2 Tx pin: 17]
  * Fingerprint scanner --> UART --> [UART1 pins: 9,10]
- * Indoor button to open the door --> GPIO Interrupt -->
- * Indoor button to close the door --> GPIO Interrupt -->
- * Outdoor button to close the door --> GPIO Interrupt -->
+ * Indoor button to open/close the door --> GPIO + Timer Interrupt -->
+ * Outdoor button to close the door --> GPIO + Timer Interrupt -->
  * Electromagnetic lock
- * IR sensor --> GPIO -->
- * LED(s)
- * Buzzer
+ * IR sensor --> GPIO Interrupt -->
+ * LED to signify the lock is awaiting an input --> GPIO --> 2
+ * LED to signify an incorrect input --> GPIO --> 15
+ * Active Buzzer --> GPIO --> 
  * 
  * Helpful libraries:
  * Wire.h
@@ -29,6 +29,9 @@
  * FS.h
  * BluetoothSerial.h
 */
+
+#define LED_AWAITING_INPUT    2
+#define LED_INCORRECT_INPUT   15
 
 //Password states
 typedef enum 
@@ -58,6 +61,8 @@ void AddPhoneNumber(void);
 void setup() 
 {
   setCpuFrequencyMhz(80);
+  pinMode(LED_AWAITING_INPUT,OUTPUT);
+  pinMode(LED_INCORRECT_INPUT,OUTPUT);
   Wire.begin(21,4); //SDA pin, SCL pin
   Serial.begin(115200);
   Serial2.begin(9600,SERIAL_8N1,-1,17); //for SIM800L
@@ -70,20 +75,24 @@ void setup()
 
 void loop() 
 {  
-  //Bluetooth
   ProcessBluetoothData();
-  //Keypad
   char key = keypad.GetChar();
   switch(key)
   {
     case '*':
+      digitalWrite(LED_AWAITING_INPUT,HIGH);
       InputPassword();
+      digitalWrite(LED_AWAITING_INPUT,LOW);
       break;
     case 'C':
+      digitalWrite(LED_AWAITING_INPUT,HIGH);
       ChangePassword();
+      digitalWrite(LED_AWAITING_INPUT,LOW);
       break;
     case 'A':
+      digitalWrite(LED_AWAITING_INPUT,HIGH);
       AddPhoneNumber();
+      digitalWrite(LED_AWAITING_INPUT,LOW);
       break;
   }
 }
@@ -159,16 +168,19 @@ void InputPassword(void)
   GetKeypadData(pswd);
   if(strcmp(pswd,sdPassword) == 0)
   {
+    digitalWrite(LED_INCORRECT_INPUT,LOW);
     Serial.println("Password is correct");
     Serial.println("Door Open");
   }
   else
   {
+    digitalWrite(LED_INCORRECT_INPUT,HIGH);
     Serial.println("Incorrect password, 2 attempts left");
     pw_s pswdState = RetryPassword(pswd,sdPassword);
     switch(pswdState)
     {
       case PASSWORD_CORRECT:
+        digitalWrite(LED_INCORRECT_INPUT,LOW);
         Serial.println("Password is now correct");
         Serial.println("Door Open");
         break;
@@ -216,11 +228,13 @@ void InputNewPassword(void)
   }
   else
   {
+    digitalWrite(LED_INCORRECT_INPUT,HIGH);
     Serial.println("Incorrect input, 2 attempts left");
     pw_s pswdState = RetryPassword(pswd,newPassword);
     switch(pswdState)
     {
       case PASSWORD_CORRECT:
+        digitalWrite(LED_INCORRECT_INPUT,LOW);
         Serial.println("New password successfully created");
         strcpy(sdPassword,pswd);
         SD_WriteFile(SD,"/pw.txt",sdPassword);
@@ -240,16 +254,19 @@ void ChangePassword(void)
   GetKeypadData(pswd);
   if(strcmp(pswd,sdPassword) == 0)
   {
+    digitalWrite(LED_INCORRECT_INPUT,LOW);
     Serial.println("Correct, now enter new password");
     InputNewPassword();
   }
   else
   {
+    digitalWrite(LED_INCORRECT_INPUT,HIGH);
     Serial.println("Incorrect password, 2 attempts left");
     pw_s pswdState = RetryPassword(pswd,sdPassword);
     switch(pswdState)
     {
       case PASSWORD_CORRECT:
+        digitalWrite(LED_INCORRECT_INPUT,LOW);
         Serial.println("Correct, now enter new password");
         InputNewPassword();
         break;
@@ -282,16 +299,19 @@ void AddPhoneNumber(void)
   GetKeypadData(pswd);
   if(strcmp(pswd,sdPassword) == 0)
   {
+    digitalWrite(LED_INCORRECT_INPUT,LOW);
     Serial.println("Password is correct");
     InputPhoneNumber();
   }
   else
   {
+    digitalWrite(LED_INCORRECT_INPUT,HIGH);
     Serial.println("Incorrect password, 2 attempts left");
     pw_s pswdState = RetryPassword(pswd,sdPassword);
     switch(pswdState)
     {
       case PASSWORD_CORRECT:
+        digitalWrite(LED_INCORRECT_INPUT,LOW);
         Serial.println("Password is correct");
         InputPhoneNumber();
         break;
