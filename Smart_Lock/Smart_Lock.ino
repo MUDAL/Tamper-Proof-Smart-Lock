@@ -12,8 +12,8 @@
  * RTC module [+3.3v power] --> I2C --> [pins: 21(SDA),4(SCL)]
  * GSM module [External 4.3v power] --> UART --> [UART2 Tx pin: 17]
  * Fingerprint scanner --> UART --> [UART1 pins: 9,10]
- * Indoor button to open/close the door --> GPIO + Timer Interrupt -->
- * Outdoor button to close the door --> GPIO + Timer Interrupt -->
+ * Indoor button to open/close the door --> GPIO with external pullup + Timer Interrupt --> 34
+ * Outdoor button to close the door --> GPIO with external pullup + Timer Interrupt --> 35
  * Electromagnetic lock
  * IR sensor --> GPIO Interrupt -->
  * LED to signify the lock is awaiting an input --> GPIO --> 2
@@ -40,6 +40,13 @@ typedef enum
   PASSWORD_CORRECT
 }pw_s;
 
+//Button struct
+typedef struct
+{
+  int pin;
+  bool prevPressed;
+}button_t;
+
 //Variables
 BluetoothSerial SerialBT; 
 RTC_DS3231 rtc; 
@@ -47,8 +54,12 @@ char sdPassword[MAX_PASSWORD_LEN] = {0}; //Stored password
 int rowPins[NUMBER_OF_ROWS] = {16,22,32,33};  
 int columnPins[NUMBER_OF_COLUMNS] = {25,26,27,14};
 Keypad keypad(rowPins,columnPins); 
+button_t indoorButton = {34,false};
+button_t outdoorButton = {35,false};
+hw_timer_t* timer0 = NULL;
 
 //Functions
+bool ReadButton(button_t* pButton);
 void ProcessBluetoothData(void);
 void GetKeypadData(char* keyBuffer);
 void InputPassword(void);
@@ -58,9 +69,24 @@ void ChangePassword(void);
 void InputPhoneNumber(void);
 void AddPhoneNumber(void);
 
+//ISRs
+void IRAM_ATTR Timer0ISR(void)
+{
+  if(ReadButton(&indoorButton))
+  {
+    Serial.println("Open");
+  }
+  if(ReadButton(&outdoorButton))
+  {
+    Serial.println("Close");
+  }
+}
+
 void setup() 
 {
   setCpuFrequencyMhz(80);
+  pinMode(indoorButton.pin,INPUT);
+  pinMode(outdoorButton.pin,INPUT);
   pinMode(LED_AWAITING_INPUT,OUTPUT);
   pinMode(LED_INCORRECT_INPUT,OUTPUT);
   Wire.begin(21,4); //SDA pin, SCL pin
@@ -71,10 +97,14 @@ void setup()
   SD_ReadFile(SD,"/pw.txt",sdPassword);
   Serial.print("password:");
   Serial.println(sdPassword);
+  timer0 = timerBegin(0,80,true);
+  timerAttachInterrupt(timer0,Timer0ISR,true);
+  timerAlarmWrite(timer0,10000,true);//10ms periodic timer interrupt
+  timerAlarmEnable(timer0);
 }
 
 void loop() 
-{  
+{
   ProcessBluetoothData();
   char key = keypad.GetChar();
   switch(key)
@@ -95,6 +125,25 @@ void loop()
       digitalWrite(LED_AWAITING_INPUT,LOW);
       break;
   }
+}
+
+/*
+ * @brief Reads the logic state of a button
+ * @param pButton: pointer to struct containing button data
+ * @return true if button is pressed once and false if otherwise
+*/
+bool ReadButton(button_t* pButton)
+{
+  if(!digitalRead(pButton->pin) && !pButton->prevPressed)
+  {
+    pButton->prevPressed = true;
+    return true;
+  }
+  else if(digitalRead(pButton->pin) && pButton->prevPressed)
+  {
+    pButton->prevPressed = false;
+  }
+  return false;    
 }
 
 void ProcessBluetoothData(void)
