@@ -11,14 +11,14 @@
  * SD card [+3.3v power] --> SPI --> [SPI pins: 23,19,18,5]
  * RTC module [+3.3v power] --> I2C --> [pins: 21(SDA),4(SCL)]
  * GSM module [External 4.3v power] --> UART --> [UART2 Tx pin: 17]
- * Fingerprint scanner --> UART --> [UART1 pins: 9,10]
+ * -Fingerprint scanner --> UART --> [UART1 pins: 9,10]
  * Indoor button to open/close the door --> GPIO with external pullup + Timer Interrupt --> 34
  * Outdoor button to close the door --> GPIO with external pullup + Timer Interrupt --> 35
- * Electromagnetic lock
- * IR sensor --> GPIO Interrupt -->
+ * -Electromagnetic lock --> GPIO -->
+ * IR sensor --> GPIO Interrupt --> 36
  * LED to signify the lock is awaiting an input --> GPIO --> 2
  * LED to signify an incorrect input --> GPIO --> 15
- * Active Buzzer --> GPIO --> 
+ * -Active Buzzer --> GPIO --> 
  * 
  * Helpful libraries:
  * Wire.h
@@ -58,6 +58,7 @@ Keypad keypad(rowPins,columnPins);
 button_t indoorButton = {34,false};
 button_t outdoorButton = {35,false};
 hw_timer_t* timer0 = NULL;
+bool intruderDetected = false;
 volatile bool failedInput = false; //set when password is incorrect after multiple trials, reset by a Timer ISR after a timeout
 volatile bool tampered = false;
 
@@ -124,7 +125,9 @@ void setup()
 
 void loop() 
 {
+  //Bluetooth
   ProcessBluetoothData();
+  //Keypad
   if(!failedInput)
   {
     char key = keypad.GetChar();
@@ -147,13 +150,16 @@ void loop()
         break;
     }
   }
-  else
+  //Intruder detection
+  if(intruderDetected)
   {
     char countryCodePhoneNo[15] = {0};
     Serial.println("Intruder!!!!!");
     SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
     SendSMS(countryCodePhoneNo,"Intruder!!!!!");
+    intruderDetected = false;
   }
+  //Tamper detection
   if(tampered)
   {
     digitalWrite(LED_INTRUSION,HIGH);
@@ -163,6 +169,10 @@ void loop()
     SendSMS(countryCodePhoneNo,"Tamper detected!!!!!");
     tampered = false;
   }
+  //Fingerprint
+  /*
+   * Place code here
+  */
 }
 
 /*
@@ -272,6 +282,7 @@ void InputPassword(void)
         break;
       case PASSWORD_INCORRECT:
         failedInput = true;
+        intruderDetected = true;
         break;
     }
   }
@@ -355,6 +366,7 @@ void ChangePassword(void)
         break;
       case PASSWORD_INCORRECT:
         failedInput = true;
+        intruderDetected = true;
         break;
     }  
   }
@@ -397,6 +409,7 @@ void AddPhoneNumber(void)
         break;
       case PASSWORD_INCORRECT:
         failedInput = true;
+        intruderDetected = true;
         break;
     }    
   }  
