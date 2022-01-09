@@ -31,7 +31,8 @@
 */
 
 #define LED_AWAITING_INPUT    2
-#define LED_INCORRECT_INPUT   15
+#define LED_INTRUSION         15
+#define IR_SENSOR             36 //VP pin
 
 //Password states
 typedef enum 
@@ -57,6 +58,8 @@ Keypad keypad(rowPins,columnPins);
 button_t indoorButton = {34,false};
 button_t outdoorButton = {35,false};
 hw_timer_t* timer0 = NULL;
+volatile bool failedInput = false; //set when password is incorrect after multiple trials, reset by a Timer ISR after a timeout
+volatile bool tampered = false;
 
 //Functions
 bool ReadButton(button_t* pButton);
@@ -72,9 +75,18 @@ void AddPhoneNumber(void);
 //ISRs
 void IRAM_ATTR Timer0ISR(void)
 {
+  static int toggle = 0;
   if(ReadButton(&indoorButton))
   {
-    Serial.println("Open");
+    toggle ^= 1;
+    if(toggle)
+    {
+      Serial.println("Open");
+    }
+    else
+    {
+      Serial.println("Close");
+    }
   }
   if(ReadButton(&outdoorButton))
   {
@@ -82,13 +94,19 @@ void IRAM_ATTR Timer0ISR(void)
   }
 }
 
+void IRAM_ATTR GPIO36ISR(void)
+{
+  tampered = true;
+}
+
 void setup() 
 {
   setCpuFrequencyMhz(80);
   pinMode(indoorButton.pin,INPUT);
   pinMode(outdoorButton.pin,INPUT);
+  pinMode(IR_SENSOR,INPUT);
   pinMode(LED_AWAITING_INPUT,OUTPUT);
-  pinMode(LED_INCORRECT_INPUT,OUTPUT);
+  pinMode(LED_INTRUSION,OUTPUT);
   Wire.begin(21,4); //SDA pin, SCL pin
   Serial.begin(115200);
   Serial2.begin(9600,SERIAL_8N1,-1,17); //for SIM800L
@@ -97,6 +115,7 @@ void setup()
   SD_ReadFile(SD,"/pw.txt",sdPassword);
   Serial.print("password:");
   Serial.println(sdPassword);
+  attachInterrupt(IR_SENSOR,GPIO36ISR,CHANGE);
   timer0 = timerBegin(0,80,true);
   timerAttachInterrupt(timer0,Timer0ISR,true);
   timerAlarmWrite(timer0,10000,true);//10ms periodic timer interrupt
@@ -106,24 +125,43 @@ void setup()
 void loop() 
 {
   ProcessBluetoothData();
-  char key = keypad.GetChar();
-  switch(key)
+  if(!failedInput)
   {
-    case '*':
-      digitalWrite(LED_AWAITING_INPUT,HIGH);
-      InputPassword();
-      digitalWrite(LED_AWAITING_INPUT,LOW);
-      break;
-    case 'C':
-      digitalWrite(LED_AWAITING_INPUT,HIGH);
-      ChangePassword();
-      digitalWrite(LED_AWAITING_INPUT,LOW);
-      break;
-    case 'A':
-      digitalWrite(LED_AWAITING_INPUT,HIGH);
-      AddPhoneNumber();
-      digitalWrite(LED_AWAITING_INPUT,LOW);
-      break;
+    char key = keypad.GetChar();
+    switch(key)
+    {
+      case '*':
+        digitalWrite(LED_AWAITING_INPUT,HIGH);
+        InputPassword();
+        digitalWrite(LED_AWAITING_INPUT,LOW);
+        break;
+      case 'C':
+        digitalWrite(LED_AWAITING_INPUT,HIGH);
+        ChangePassword();
+        digitalWrite(LED_AWAITING_INPUT,LOW);
+        break;
+      case 'A':
+        digitalWrite(LED_AWAITING_INPUT,HIGH);
+        AddPhoneNumber();
+        digitalWrite(LED_AWAITING_INPUT,LOW);
+        break;
+    }
+  }
+  else
+  {
+    char countryCodePhoneNo[15] = {0};
+    Serial.println("Intruder!!!!!");
+    SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
+    SendSMS(countryCodePhoneNo,"Intruder!!!!!");
+  }
+  if(tampered)
+  {
+    digitalWrite(LED_INTRUSION,HIGH);
+    char countryCodePhoneNo[15] = {0};
+    Serial.println("Tamper detected!!!!!");
+    SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
+    SendSMS(countryCodePhoneNo,"Tamper detected!!!!!");
+    tampered = false;
   }
 }
 
@@ -212,31 +250,28 @@ void GetKeypadData(char* keyBuffer)
 void InputPassword(void)
 {
   char pswd[MAX_PASSWORD_LEN] = {0};
-  char countryCodePhoneNo[15] = {0};
   Serial.println("Entering password mode");
   GetKeypadData(pswd);
   if(strcmp(pswd,sdPassword) == 0)
   {
-    digitalWrite(LED_INCORRECT_INPUT,LOW);
+    digitalWrite(LED_INTRUSION,LOW);
     Serial.println("Password is correct");
     Serial.println("Door Open");
   }
   else
   {
-    digitalWrite(LED_INCORRECT_INPUT,HIGH);
+    digitalWrite(LED_INTRUSION,HIGH);
     Serial.println("Incorrect password, 2 attempts left");
     pw_s pswdState = RetryPassword(pswd,sdPassword);
     switch(pswdState)
     {
       case PASSWORD_CORRECT:
-        digitalWrite(LED_INCORRECT_INPUT,LOW);
+        digitalWrite(LED_INTRUSION,LOW);
         Serial.println("Password is now correct");
         Serial.println("Door Open");
         break;
       case PASSWORD_INCORRECT:
-        Serial.println("Intruder!!!!!");
-        SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
-        SendSMS(countryCodePhoneNo,"Intruder!!!!!");
+        failedInput = true;
         break;
     }
   }
@@ -277,13 +312,13 @@ void InputNewPassword(void)
   }
   else
   {
-    digitalWrite(LED_INCORRECT_INPUT,HIGH);
+    digitalWrite(LED_INTRUSION,HIGH);
     Serial.println("Incorrect input, 2 attempts left");
     pw_s pswdState = RetryPassword(pswd,newPassword);
     switch(pswdState)
     {
       case PASSWORD_CORRECT:
-        digitalWrite(LED_INCORRECT_INPUT,LOW);
+        digitalWrite(LED_INTRUSION,LOW);
         Serial.println("New password successfully created");
         strcpy(sdPassword,pswd);
         SD_WriteFile(SD,"/pw.txt",sdPassword);
@@ -298,31 +333,28 @@ void InputNewPassword(void)
 void ChangePassword(void)
 {
   char pswd[MAX_PASSWORD_LEN] = {0};
-  char countryCodePhoneNo[15] = {0};
   Serial.println("Enter previous password");
   GetKeypadData(pswd);
   if(strcmp(pswd,sdPassword) == 0)
   {
-    digitalWrite(LED_INCORRECT_INPUT,LOW);
+    digitalWrite(LED_INTRUSION,LOW);
     Serial.println("Correct, now enter new password");
     InputNewPassword();
   }
   else
   {
-    digitalWrite(LED_INCORRECT_INPUT,HIGH);
+    digitalWrite(LED_INTRUSION,HIGH);
     Serial.println("Incorrect password, 2 attempts left");
     pw_s pswdState = RetryPassword(pswd,sdPassword);
     switch(pswdState)
     {
       case PASSWORD_CORRECT:
-        digitalWrite(LED_INCORRECT_INPUT,LOW);
+        digitalWrite(LED_INTRUSION,LOW);
         Serial.println("Correct, now enter new password");
         InputNewPassword();
         break;
       case PASSWORD_INCORRECT:
-        Serial.println("Intruder!!!!!");
-        SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
-        SendSMS(countryCodePhoneNo,"Intruder!!!!!");
+        failedInput = true;
         break;
     }  
   }
@@ -343,31 +375,28 @@ void InputPhoneNumber(void)
 void AddPhoneNumber(void)
 {
   char pswd[MAX_PASSWORD_LEN] = {0};
-  char countryCodePhoneNo[15] = {0};
   Serial.println("Enter the password");
   GetKeypadData(pswd);
   if(strcmp(pswd,sdPassword) == 0)
   {
-    digitalWrite(LED_INCORRECT_INPUT,LOW);
+    digitalWrite(LED_INTRUSION,LOW);
     Serial.println("Password is correct");
     InputPhoneNumber();
   }
   else
   {
-    digitalWrite(LED_INCORRECT_INPUT,HIGH);
+    digitalWrite(LED_INTRUSION,HIGH);
     Serial.println("Incorrect password, 2 attempts left");
     pw_s pswdState = RetryPassword(pswd,sdPassword);
     switch(pswdState)
     {
       case PASSWORD_CORRECT:
-        digitalWrite(LED_INCORRECT_INPUT,LOW);
+        digitalWrite(LED_INTRUSION,LOW);
         Serial.println("Password is correct");
         InputPhoneNumber();
         break;
       case PASSWORD_INCORRECT:
-        Serial.println("Intruder!!!!!");
-        SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
-        SendSMS(countryCodePhoneNo,"Intruder!!!!!");
+        failedInput = true;
         break;
     }    
   }  
