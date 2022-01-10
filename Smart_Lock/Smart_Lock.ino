@@ -58,8 +58,10 @@ Keypad keypad(rowPins,columnPins);
 button_t indoorButton = {34,false};
 button_t outdoorButton = {35,false};
 hw_timer_t* timer0 = NULL;
+hw_timer_t* timer1 = NULL;
 bool intruderDetected = false;
-volatile bool failedInput = false; //set when password is incorrect after multiple trials, reset by a Timer ISR after a timeout
+volatile bool failedInput = false; //set when password is incorrect after multiple trials, reset by a Timer1 ISR after a timeout
+volatile bool buzzerOn = false; //set when password is incorrect after multiple trials/ tamper detection, reset by a Timer1 ISR after a timeout
 volatile bool tampered = false;
 
 //Functions
@@ -74,6 +76,9 @@ void InputPhoneNumber(void);
 void AddPhoneNumber(void);
 
 //ISRs
+/*
+ * @brief Periodically polls and de-bounces the buttons
+*/
 void IRAM_ATTR Timer0ISR(void)
 {
   static int toggle = 0;
@@ -95,6 +100,40 @@ void IRAM_ATTR Timer0ISR(void)
   }
 }
 
+/*
+ * @brief Handles timings asynchronously
+*/
+void IRAM_ATTR Timer1ISR(void)
+{
+  static int failedInputTimeout = 0;
+  static int buzzerTimeout = 0;
+  if(failedInput)
+  {
+    failedInputTimeout++;
+    if(failedInputTimeout == 10000)
+    {
+      //returns access to the lock 
+      Serial.println("Access restored");
+      failedInput = false;
+      failedInputTimeout = 0;
+    }
+  }
+  if(buzzerOn)
+  {
+    buzzerTimeout++;
+    if(buzzerTimeout == 10000)
+    {
+      /*Place code to turn buzzer off*/
+      Serial.println("Buzzer off");
+      buzzerOn = false;
+    }
+  }
+  /*Place code to turn solenoid lock off (after 8seconds) to avoid power drain*/
+}
+
+/*
+ * @brief For tamper detection
+*/
 void IRAM_ATTR GPIO36ISR(void)
 {
   tampered = true;
@@ -121,6 +160,10 @@ void setup()
   timerAttachInterrupt(timer0,Timer0ISR,true);
   timerAlarmWrite(timer0,10000,true);//10ms periodic timer interrupt
   timerAlarmEnable(timer0);
+  timer1 = timerBegin(1,80,true);
+  timerAttachInterrupt(timer1,Timer1ISR,true);
+  timerAlarmWrite(timer1,1000,true);//1ms periodic timer interrupt
+  timerAlarmEnable(timer1);
 }
 
 void loop() 
@@ -155,6 +198,8 @@ void loop()
   {
     char countryCodePhoneNo[15] = {0};
     Serial.println("Intruder!!!!!");
+    /*Place code to turn buzzer on*/
+    buzzerOn = true;
     SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
     SendSMS(countryCodePhoneNo,"Intruder!!!!!");
     intruderDetected = false;
@@ -164,7 +209,9 @@ void loop()
   {
     digitalWrite(LED_INTRUSION,HIGH);
     char countryCodePhoneNo[15] = {0};
-    Serial.println("Tamper detected!!!!!");
+    Serial.println("Tamper detected!!!!!"); 
+    /*Place code to turn buzzer on*/
+    buzzerOn = true;
     SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
     SendSMS(countryCodePhoneNo,"Tamper detected!!!!!");
     tampered = false;
@@ -265,6 +312,7 @@ void InputPassword(void)
   if(strcmp(pswd,sdPassword) == 0)
   {
     digitalWrite(LED_INTRUSION,LOW);
+    /*Place code to open the lock*/
     Serial.println("Password is correct");
     Serial.println("Door Open");
   }
@@ -277,6 +325,7 @@ void InputPassword(void)
     {
       case PASSWORD_CORRECT:
         digitalWrite(LED_INTRUSION,LOW);
+        /*Place code to open the lock*/
         Serial.println("Password is now correct");
         Serial.println("Door Open");
         break;
