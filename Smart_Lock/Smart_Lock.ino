@@ -126,6 +126,7 @@ void IRAM_ATTR Timer1ISR(void)
       /*Place code to turn buzzer off*/
       Serial.println("Buzzer off");
       buzzerOn = false;
+      buzzerTimeout = 0;
     }
   }
   /*Place code to turn solenoid lock off (after 8seconds) to avoid power drain*/
