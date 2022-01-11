@@ -48,7 +48,7 @@ bool Keypad::IsDebounced(int pinIndex)
 }
 
 /*
- * @brief Initializes an object of the keypad class
+ * @brief Initializes an object of the Keypad class
  * @param pRowPins: starting address of the array of pins for the keypad's rows
  * @param pColPins: starting address of the array of pins for the keypad's columns
  * @return None

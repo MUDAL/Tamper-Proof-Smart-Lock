@@ -3,6 +3,7 @@
 #include "sd_card.h"
 #include "gsm_bt.h"
 #include "keypad.h"
+#include "button.h"
 
 /*
  * Components:
@@ -41,13 +42,6 @@ typedef enum
   PASSWORD_CORRECT
 }pw_s;
 
-//Button struct
-typedef struct
-{
-  int pin;
-  bool prevPressed;
-}button_t;
-
 //Variables
 BluetoothSerial SerialBT; 
 RTC_DS3231 rtc; 
@@ -55,8 +49,8 @@ char sdPassword[MAX_PASSWORD_LEN] = {0}; //Stored password
 int rowPins[NUMBER_OF_ROWS] = {16,22,32,33};  
 int columnPins[NUMBER_OF_COLUMNS] = {25,26,27,14};
 Keypad keypad(rowPins,columnPins); 
-button_t indoorButton = {34,false};
-button_t outdoorButton = {35,false};
+Button indoorButton(34);
+Button outdoorButton(35);
 hw_timer_t* timer0 = NULL;
 hw_timer_t* timer1 = NULL;
 bool intruderDetected = false;
@@ -65,7 +59,6 @@ volatile bool buzzerOn = false; //set when password is incorrect after multiple 
 volatile bool tampered = false;
 
 //Functions
-bool ReadButton(button_t* pButton);
 void ProcessBluetoothData(void);
 void GetKeypadData(char* keyBuffer);
 void InputPassword(void);
@@ -82,7 +75,7 @@ void AddPhoneNumber(void);
 void IRAM_ATTR Timer0ISR(void)
 {
   static int toggle = 0;
-  if(ReadButton(&indoorButton))
+  if(indoorButton.IsPressedOnce())
   {
     toggle ^= 1;
     if(toggle)
@@ -94,7 +87,7 @@ void IRAM_ATTR Timer0ISR(void)
       Serial.println("Close");
     }
   }
-  if(ReadButton(&outdoorButton))
+  if(outdoorButton.IsPressedOnce())
   {
     Serial.println("Close");
   }
@@ -143,8 +136,6 @@ void IRAM_ATTR GPIO36ISR(void)
 void setup() 
 {
   setCpuFrequencyMhz(80);
-  pinMode(indoorButton.pin,INPUT);
-  pinMode(outdoorButton.pin,INPUT);
   pinMode(IR_SENSOR,INPUT);
   pinMode(LED_AWAITING_INPUT,OUTPUT);
   pinMode(LED_INTRUSION,OUTPUT);
@@ -221,25 +212,6 @@ void loop()
   /*
    * Place code here
   */
-}
-
-/*
- * @brief Reads the logic state of a button
- * @param pButton: pointer to struct containing button data
- * @return true if button is pressed once and false if otherwise
-*/
-bool ReadButton(button_t* pButton)
-{
-  if(!digitalRead(pButton->pin) && !pButton->prevPressed)
-  {
-    pButton->prevPressed = true;
-    return true;
-  }
-  else if(digitalRead(pButton->pin) && pButton->prevPressed)
-  {
-    pButton->prevPressed = false;
-  }
-  return false;    
 }
 
 void ProcessBluetoothData(void)
