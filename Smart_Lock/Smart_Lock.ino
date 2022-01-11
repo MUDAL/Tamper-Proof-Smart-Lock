@@ -150,7 +150,7 @@ void setup()
   attachInterrupt(IR_SENSOR,GPIO36ISR,CHANGE);
   timer0 = timerBegin(0,80,true);
   timerAttachInterrupt(timer0,Timer0ISR,true);
-  timerAlarmWrite(timer0,10000,true);//10ms periodic timer interrupt
+  timerAlarmWrite(timer0,15000,true);//15ms periodic timer interrupt
   timerAlarmEnable(timer0);
   timer1 = timerBegin(1,80,true);
   timerAttachInterrupt(timer1,Timer1ISR,true);
