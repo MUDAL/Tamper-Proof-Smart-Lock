@@ -9,7 +9,7 @@
  * Components:
  * ESP32 inbuilt bluetooth --> Bluetooth serial
  * Keypad --> GPIO --> [(row pins: 16,22,32,33), (column pins: 25,26,27,14)]
- * SD card [+3.3v power] --> SPI --> [SPI pins: 23,19,18,5]
+ * SD card [+3.3v power *Consider 5v power] --> SPI --> [SPI pins: 23,19,18,5]
  * RTC module [+3.3v power] --> I2C --> [pins: 21(SDA),4(SCL)]
  * GSM module [External 4.3v power] --> UART --> [UART2 Tx pin: 17]
  * -Fingerprint scanner --> UART --> [UART1 pins: 9,10]
@@ -54,6 +54,7 @@ Button outdoorButton(35);
 hw_timer_t* timer0 = NULL;
 hw_timer_t* timer1 = NULL;
 bool intruderDetected = false;
+volatile bool unlocked = false;
 volatile bool failedInput = false; //set when password is incorrect after multiple trials, reset by a Timer1 ISR after a timeout
 volatile bool buzzerOn = false; //set when password is incorrect after multiple trials/ tamper detection, reset by a Timer1 ISR after a timeout
 volatile bool tampered = false;
@@ -74,22 +75,24 @@ void AddPhoneNumber(void);
 */
 void IRAM_ATTR Timer0ISR(void)
 {
-  static int toggle = 0;
-  if(indoorButton.IsPressedOnce())
+  if(!unlocked)
   {
-    toggle ^= 1;
-    if(toggle)
+    if(indoorButton.IsPressedOnce())
     {
       Serial.println("Open");
-    }
-    else
-    {
-      Serial.println("Close");
+      /*Place code to open the door*/
+      unlocked = true;
     }
   }
-  if(outdoorButton.IsPressedOnce())
+  else
   {
-    Serial.println("Close");
+    if(indoorButton.IsPressedOnce() || 
+       outdoorButton.IsPressedOnce())
+    {
+      Serial.println("Close");
+      /*Place code to close the door*/
+      unlocked = false;
+    }
   }
 }
 
@@ -100,6 +103,7 @@ void IRAM_ATTR Timer1ISR(void)
 {
   static int failedInputTimeout = 0;
   static int buzzerTimeout = 0;
+  static int lockTimeout = 0;
   if(failedInput)
   {
     failedInputTimeout++;
@@ -123,6 +127,21 @@ void IRAM_ATTR Timer1ISR(void)
     }
   }
   /*Place code to turn solenoid lock off (after 8seconds) to avoid power drain*/
+  if(unlocked)
+  {
+    lockTimeout++;
+    if(lockTimeout == 8000)
+    {
+      /*Place code to close the door*/
+      Serial.println("Door closed");
+      unlocked = false;
+      lockTimeout = 0;
+    }
+  }
+  else
+  {
+    lockTimeout = 0;
+  }
 }
 
 /*
@@ -286,6 +305,7 @@ void InputPassword(void)
   {
     digitalWrite(LED_INTRUSION,LOW);
     /*Place code to open the lock*/
+    unlocked = true;
     Serial.println("Password is correct");
     Serial.println("Door Open");
   }
@@ -299,6 +319,7 @@ void InputPassword(void)
       case PASSWORD_CORRECT:
         digitalWrite(LED_INTRUSION,LOW);
         /*Place code to open the lock*/
+        unlocked = true;
         Serial.println("Password is now correct");
         Serial.println("Door Open");
         break;

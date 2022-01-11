@@ -3,12 +3,12 @@
 
 /*
  * @brief Initializes an object of the Button class
- * @param None
+ * @param bPin: Pin connected to the button
  * @return None
 */
-Button::Button(int pinNumber)
+Button::Button(int bPin)
 {
-  pin = pinNumber;
+  pin = bPin;
   prevPressed = false;
   pinMode(pin,INPUT);
 }

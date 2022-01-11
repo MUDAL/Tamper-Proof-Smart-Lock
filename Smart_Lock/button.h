@@ -8,7 +8,7 @@ class Button
     bool prevPressed;
     
   public:
-    Button(int pinNumber);
+    Button(int bPin);
     bool IsPressedOnce(void);
 };
 
