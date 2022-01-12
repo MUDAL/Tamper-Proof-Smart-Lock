@@ -3,7 +3,7 @@
 #include "sd_card.h"
 #include "gsm_bt.h"
 #include "keypad.h"
-#include "button.h"
+#include "threads.h"
 
 /*
  * Components:
@@ -33,7 +33,6 @@
 
 #define LED_AWAITING_INPUT    2
 #define LED_INTRUSION         15
-#define IR_SENSOR             36 //VP pin
 
 //Password states
 typedef enum 
@@ -49,15 +48,7 @@ char sdPassword[MAX_PASSWORD_LEN] = {0}; //Stored password
 int rowPins[NUMBER_OF_ROWS] = {16,22,32,33};  
 int columnPins[NUMBER_OF_COLUMNS] = {25,26,27,14};
 Keypad keypad(rowPins,columnPins); 
-Button indoorButton(34);
-Button outdoorButton(35);
-hw_timer_t* timer0 = NULL;
-hw_timer_t* timer1 = NULL;
 bool intruderDetected = false;
-volatile bool unlocked = false;
-volatile bool failedInput = false; //set when password is incorrect after multiple trials, reset by a Timer1 ISR after a timeout
-volatile bool buzzerOn = false; //set when password is incorrect after multiple trials/ tamper detection, reset by a Timer1 ISR after a timeout
-volatile bool tampered = false;
 
 //Functions
 void ProcessBluetoothData(void);
@@ -69,93 +60,9 @@ void ChangePassword(void);
 void InputPhoneNumber(void);
 void AddPhoneNumber(void);
 
-//ISRs
-/*
- * @brief Periodically polls and de-bounces the buttons
-*/
-void IRAM_ATTR Timer0ISR(void)
-{
-  if(!unlocked)
-  {
-    if(indoorButton.IsPressedOnce())
-    {
-      Serial.println("Open");
-      /*Place code to open the door*/
-      unlocked = true;
-    }
-  }
-  else
-  {
-    if(indoorButton.IsPressedOnce() || 
-       outdoorButton.IsPressedOnce())
-    {
-      Serial.println("Close");
-      /*Place code to close the door*/
-      unlocked = false;
-    }
-  }
-}
-
-/*
- * @brief Handles timings asynchronously
-*/
-void IRAM_ATTR Timer1ISR(void)
-{
-  static int failedInputTimeout = 0;
-  static int buzzerTimeout = 0;
-  static int lockTimeout = 0;
-  if(failedInput)
-  {
-    failedInputTimeout++;
-    if(failedInputTimeout == 10000)
-    {
-      //returns access to the lock 
-      Serial.println("Access restored");
-      failedInput = false;
-      failedInputTimeout = 0;
-    }
-  }
-  if(buzzerOn)
-  {
-    buzzerTimeout++;
-    if(buzzerTimeout == 10000)
-    {
-      /*Place code to turn buzzer off*/
-      Serial.println("Buzzer off");
-      buzzerOn = false;
-      buzzerTimeout = 0;
-    }
-  }
-  /*Place code to turn solenoid lock off (after 8seconds) to avoid power drain*/
-  if(unlocked)
-  {
-    lockTimeout++;
-    if(lockTimeout == 8000)
-    {
-      /*Place code to close the door*/
-      Serial.println("Door closed");
-      unlocked = false;
-      lockTimeout = 0;
-    }
-  }
-  else
-  {
-    lockTimeout = 0;
-  }
-}
-
-/*
- * @brief For tamper detection
-*/
-void IRAM_ATTR GPIO36ISR(void)
-{
-  tampered = true;
-}
-
 void setup() 
 {
   setCpuFrequencyMhz(80);
-  pinMode(IR_SENSOR,INPUT);
   pinMode(LED_AWAITING_INPUT,OUTPUT);
   pinMode(LED_INTRUSION,OUTPUT);
   Wire.begin(21,4); //SDA pin, SCL pin
@@ -166,15 +73,7 @@ void setup()
   SD_ReadFile(SD,"/pw.txt",sdPassword);
   Serial.print("password:");
   Serial.println(sdPassword);
-  attachInterrupt(IR_SENSOR,GPIO36ISR,CHANGE);
-  timer0 = timerBegin(0,80,true);
-  timerAttachInterrupt(timer0,Timer0ISR,true);
-  timerAlarmWrite(timer0,15000,true);//15ms periodic timer interrupt
-  timerAlarmEnable(timer0);
-  timer1 = timerBegin(1,80,true);
-  timerAttachInterrupt(timer1,Timer1ISR,true);
-  timerAlarmWrite(timer1,1000,true);//1ms periodic timer interrupt
-  timerAlarmEnable(timer1);
+  Threads_Init();
 }
 
 void loop() 
@@ -182,7 +81,7 @@ void loop()
   //Bluetooth
   ProcessBluetoothData();
   //Keypad
-  if(!failedInput)
+  if(!GetState(FAILED_INPUT))
   {
     char key = keypad.GetChar();
     switch(key)
@@ -210,22 +109,22 @@ void loop()
     char countryCodePhoneNo[15] = {0};
     Serial.println("Intruder!!!!!");
     /*Place code to turn buzzer on*/
-    buzzerOn = true;
+    SetState(BUZZER_ON,true);
     SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
     SendSMS(countryCodePhoneNo,"Intruder!!!!!");
     intruderDetected = false;
   }
   //Tamper detection
-  if(tampered)
+  if(GetState(LOCK_TAMPERED))
   {
     digitalWrite(LED_INTRUSION,HIGH);
     char countryCodePhoneNo[15] = {0};
     Serial.println("Tamper detected!!!!!"); 
     /*Place code to turn buzzer on*/
-    buzzerOn = true;
+    SetState(BUZZER_ON,true);
     SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
     SendSMS(countryCodePhoneNo,"Tamper detected!!!!!");
-    tampered = false;
+    SetState(LOCK_TAMPERED,false);
   }
   //Fingerprint
   /*
@@ -305,7 +204,7 @@ void InputPassword(void)
   {
     digitalWrite(LED_INTRUSION,LOW);
     /*Place code to open the lock*/
-    unlocked = true;
+    SetState(DOOR_UNLOCKED,true);
     Serial.println("Password is correct");
     Serial.println("Door Open");
   }
@@ -319,12 +218,12 @@ void InputPassword(void)
       case PASSWORD_CORRECT:
         digitalWrite(LED_INTRUSION,LOW);
         /*Place code to open the lock*/
-        unlocked = true;
+        SetState(DOOR_UNLOCKED,true);
         Serial.println("Password is now correct");
         Serial.println("Door Open");
         break;
       case PASSWORD_INCORRECT:
-        failedInput = true;
+        SetState(FAILED_INPUT,true);
         intruderDetected = true;
         break;
     }
@@ -408,7 +307,7 @@ void ChangePassword(void)
         InputNewPassword();
         break;
       case PASSWORD_INCORRECT:
-        failedInput = true;
+        SetState(FAILED_INPUT,true);
         intruderDetected = true;
         break;
     }  
@@ -451,7 +350,7 @@ void AddPhoneNumber(void)
         InputPhoneNumber();
         break;
       case PASSWORD_INCORRECT:
-        failedInput = true;
+        SetState(FAILED_INPUT,true);
         intruderDetected = true;
         break;
     }    
