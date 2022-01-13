@@ -20,7 +20,7 @@ void IRAM_ATTR Timer0ISR(void)
     if(indoorButton.IsPressedOnce())
     {
       Serial.println("Open");
-      /*Place code to open the door*/
+      digitalWrite(LOCK,HIGH);
       SetState(DOOR_UNLOCKED,true);
     }
   }
@@ -30,7 +30,7 @@ void IRAM_ATTR Timer0ISR(void)
        outdoorButton.IsPressedOnce())
     {
       Serial.println("Close");
-      /*Place code to close the door*/
+      digitalWrite(LOCK,LOW);
       SetState(DOOR_UNLOCKED,false);
     }
   }
@@ -60,19 +60,19 @@ void IRAM_ATTR Timer1ISR(void)
     buzzerTimeout++;
     if(buzzerTimeout == 10000)
     {
-      /*Place code to turn buzzer off*/
+      digitalWrite(BUZZER,LOW);
       Serial.println("Buzzer off");
       SetState(BUZZER_ON,false);
       buzzerTimeout = 0;
     }
   }
-  /*Place code to turn solenoid lock off (after 8seconds) to avoid power drain*/
+  /*Turn lock off (8s after being on) to avoid power drain*/
   if(GetState(DOOR_UNLOCKED))
   {
     lockTimeout++;
     if(lockTimeout == 8000)
     {
-      /*Place code to close the door*/
+      digitalWrite(LOCK,LOW);
       Serial.println("Door closed");
       SetState(DOOR_UNLOCKED,false);
       lockTimeout = 0;

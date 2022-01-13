@@ -1,6 +1,9 @@
 #ifndef THREADS_H
 #define THREADS_H
 
+#define BUZZER  12
+#define LOCK    13
+
 enum States
 {
   DOOR_UNLOCKED = 0,

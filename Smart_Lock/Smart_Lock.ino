@@ -15,11 +15,11 @@
  * -Fingerprint scanner --> UART --> [UART1 pins: 9,10]
  * Indoor button to open/close the door --> GPIO with external pullup + Timer Interrupt --> 34
  * Outdoor button to close the door --> GPIO with external pullup + Timer Interrupt --> 35
- * -Electromagnetic lock --> GPIO -->
+ * -Electromagnetic lock --> GPIO --> 13
  * IR sensor --> GPIO Interrupt --> 36
  * LED to signify the lock is awaiting an input --> GPIO --> 2
  * LED to signify an incorrect input --> GPIO --> 15
- * -Active Buzzer --> GPIO --> 
+ * -Active Buzzer --> GPIO --> 12
  * 
  * Helpful libraries:
  * Wire.h
@@ -63,6 +63,8 @@ void AddPhoneNumber(void);
 void setup() 
 {
   setCpuFrequencyMhz(80);
+  pinMode(BUZZER,OUTPUT);
+  pinMode(LOCK,OUTPUT);
   pinMode(LED_AWAITING_INPUT,OUTPUT);
   pinMode(LED_INTRUSION,OUTPUT);
   Wire.begin(21,4); //SDA pin, SCL pin
@@ -108,7 +110,7 @@ void loop()
   {
     char countryCodePhoneNo[15] = {0};
     Serial.println("Intruder!!!!!");
-    /*Place code to turn buzzer on*/
+    digitalWrite(BUZZER,HIGH);
     SetState(BUZZER_ON,true);
     SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
     SendSMS(countryCodePhoneNo,"Intruder!!!!!");
@@ -120,7 +122,7 @@ void loop()
     digitalWrite(LED_INTRUSION,HIGH);
     char countryCodePhoneNo[15] = {0};
     Serial.println("Tamper detected!!!!!"); 
-    /*Place code to turn buzzer on*/
+    digitalWrite(BUZZER,HIGH);
     SetState(BUZZER_ON,true);
     SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
     SendSMS(countryCodePhoneNo,"Tamper detected!!!!!");
@@ -203,7 +205,7 @@ void InputPassword(void)
   if(strcmp(pswd,sdPassword) == 0)
   {
     digitalWrite(LED_INTRUSION,LOW);
-    /*Place code to open the lock*/
+    digitalWrite(LOCK,HIGH);
     SetState(DOOR_UNLOCKED,true);
     Serial.println("Password is correct");
     Serial.println("Door Open");
@@ -217,7 +219,7 @@ void InputPassword(void)
     {
       case PASSWORD_CORRECT:
         digitalWrite(LED_INTRUSION,LOW);
-        /*Place code to open the lock*/
+        digitalWrite(LOCK,HIGH);
         SetState(DOOR_UNLOCKED,true);
         Serial.println("Password is now correct");
         Serial.println("Door Open");
