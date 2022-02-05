@@ -6,6 +6,13 @@
 #define OUTDOOR_BUTTON   35
 #define IR_SENSOR        36 //VP pin
 
+namespace TimeoutMillis
+{
+  const int failedInput = 10000;
+  const int buzzer = 10000;
+  const int lock = 8000;
+};
+
 static Button indoorButton(INDOOR_BUTTON);
 static Button outdoorButton(OUTDOOR_BUTTON);
 static volatile bool stateArr[4] = {false};
@@ -47,7 +54,7 @@ void IRAM_ATTR Timer1ISR(void)
   if(GetState(FAILED_INPUT))
   {
     failedInputTimeout++;
-    if(failedInputTimeout == 10000)
+    if(failedInputTimeout == TimeoutMillis::failedInput)
     {
       //returns access to the lock 
       Serial.println("Access restored");
@@ -58,7 +65,7 @@ void IRAM_ATTR Timer1ISR(void)
   if(GetState(BUZZER_ON))
   {
     buzzerTimeout++;
-    if(buzzerTimeout == 10000)
+    if(buzzerTimeout == TimeoutMillis::buzzer)
     {
       digitalWrite(BUZZER,LOW);
       Serial.println("Buzzer off");
@@ -66,11 +73,11 @@ void IRAM_ATTR Timer1ISR(void)
       buzzerTimeout = 0;
     }
   }
-  /*Turn lock off (8s after being on) to avoid power drain*/
+  //Turn lock off to avoid power drain
   if(GetState(DOOR_UNLOCKED))
   {
     lockTimeout++;
-    if(lockTimeout == 8000)
+    if(lockTimeout == TimeoutMillis::lock)
     {
       digitalWrite(LOCK,LOW);
       Serial.println("Door closed");
