@@ -15,20 +15,18 @@ namespace TimeoutMillis
 
 static Button indoorButton(INDOOR_BUTTON);
 static Button outdoorButton(OUTDOOR_BUTTON);
-static volatile bool stateArr[4] = {false};
 
 /*
  * @brief Periodically polls and de-bounces the buttons
 */
 void IRAM_ATTR Timer0ISR(void)
 {
-  if(!GetState(DOOR_UNLOCKED))
+  if(!System_IsDoorOpen())
   {
     if(indoorButton.IsPressedOnce())
     {
       Serial.println("Door opened via indoor button");
-      digitalWrite(LOCK,HIGH);
-      SetState(DOOR_UNLOCKED,true);
+      System_ActuateLock(true);
     }
   }
   else
@@ -37,8 +35,7 @@ void IRAM_ATTR Timer0ISR(void)
        outdoorButton.IsPressedOnce())
     {
       Serial.println("Door closed via button");
-      digitalWrite(LOCK,LOW);
-      SetState(DOOR_UNLOCKED,false);
+      System_ActuateLock(false);
     }
   }
 }
@@ -51,37 +48,35 @@ void IRAM_ATTR Timer1ISR(void)
   static int failedInputTimeout = 0;
   static int buzzerTimeout = 0;
   static int lockTimeout = 0;
-  if(GetState(FAILED_INPUT))
+  if(System_GetState(FAILED_INPUT))
   {
     failedInputTimeout++;
     if(failedInputTimeout == TimeoutMillis::failedInput)
     {
       //returns access to the lock 
       Serial.println("Access restored");
-      SetState(FAILED_INPUT,false);
+      System_SetState(FAILED_INPUT,false);
       failedInputTimeout = 0;
     }
   }
-  if(GetState(BUZZER_ON))
+  if(System_IsBuzzerOn())
   {
     buzzerTimeout++;
     if(buzzerTimeout == TimeoutMillis::buzzer)
     {
-      digitalWrite(BUZZER,LOW);
+      System_ActuateBuzzer(false);
       Serial.println("Buzzer off");
-      SetState(BUZZER_ON,false);
       buzzerTimeout = 0;
     }
   }
   //Turn lock off to avoid power drain
-  if(GetState(DOOR_UNLOCKED))
+  if(System_IsDoorOpen())
   {
     lockTimeout++;
     if(lockTimeout == TimeoutMillis::lock)
     {
-      digitalWrite(LOCK,LOW);
+      System_ActuateLock(false);
       Serial.println("Door closed via timeout");
-      SetState(DOOR_UNLOCKED,false);
       lockTimeout = 0;
     }
   }
@@ -96,30 +91,19 @@ void IRAM_ATTR Timer1ISR(void)
 */
 void IRAM_ATTR GPIO36ISR(void)
 {
-  SetState(LOCK_TAMPERED,true);
-}
-
-//Extern functions
-void SetState(int state,bool val)
-{
-  stateArr[state] = val;
-}
-
-bool GetState(int state)
-{
-  return stateArr[state];
+  System_SetState(LOCK_TAMPERED,true);
 }
 
 void Threads_Init(void)
 {
   pinMode(IR_SENSOR,INPUT);
   attachInterrupt(IR_SENSOR,GPIO36ISR,CHANGE);
-  hw_timer_t* timer0 = timerBegin(0,80,true);
+  hw_timer_t* timer0 = timerBegin(0,80,true); //timer 0, prescaler = 80
   timerAttachInterrupt(timer0,Timer0ISR,true);
-  timerAlarmWrite(timer0,15000,true);//15ms periodic timer interrupt
+  timerAlarmWrite(timer0,15000,true); //15ms periodic timer interrupt
   timerAlarmEnable(timer0);
-  hw_timer_t* timer1 = timerBegin(1,80,true);
+  hw_timer_t* timer1 = timerBegin(1,80,true); //timer 1, prescaler = 80
   timerAttachInterrupt(timer1,Timer1ISR,true);
-  timerAlarmWrite(timer1,1000,true);//1ms periodic timer interrupt
+  timerAlarmWrite(timer1,1000,true); //1ms periodic timer interrupt
   timerAlarmEnable(timer1);  
 }

@@ -1,19 +1,7 @@
 #ifndef THREADS_H
 #define THREADS_H
 
-#define BUZZER  12
-#define LOCK    13
-
-enum States
-{
-  DOOR_UNLOCKED = 0,
-  FAILED_INPUT,
-  BUZZER_ON,
-  LOCK_TAMPERED
-};
-
-extern void SetState(int state,bool val);
-extern bool GetState(int state);
+#include "system.h"
 extern void Threads_Init(void);
 
 #endif //THREADS_H

@@ -1,5 +1,5 @@
-#ifndef GSM_BT_H
-#define GSM_BT_H
+#ifndef WIRELESS_COMM_H
+#define WIRELESS_COMM_H
 
 #include "BluetoothSerial.h"
 
@@ -8,5 +8,5 @@ extern void SendSMS(char* phoneNumber,char* message);
 extern void GetCountryCodePhoneNo(char* countryCodePhoneNo,char* phoneNumber);
 extern void GetBluetoothData(char* bluetoothBuffer,int maxLen);
 
-#endif //GSM_BT_H
+#endif //WIRELESS_COMM_H
 

@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include "RTClib.h" //Version 1.3.3
 #include "sd_card.h"
-#include "gsm_bt.h"
+#include "wireless_comm.h"
 #include "keypad.h"
 #include "threads.h"
 
@@ -30,7 +30,6 @@
  * FS.h
  * BluetoothSerial.h
 */
-
 #define LED_AWAITING_INPUT    2
 #define LED_INTRUSION         15
 
@@ -84,7 +83,7 @@ void loop()
   //Bluetooth
   ProcessBluetoothData();
   //Keypad
-  if(!GetState(FAILED_INPUT))
+  if(!System_GetState(FAILED_INPUT))
   {
     char key = keypad.GetChar();
     switch(key)
@@ -110,24 +109,22 @@ void loop()
   if(intruderDetected)
   {
     char countryCodePhoneNo[15] = {0};
-    digitalWrite(BUZZER,HIGH);
-    SetState(BUZZER_ON,true);
+    System_ActuateBuzzer(true);
     SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
     SendSMS(countryCodePhoneNo,"Intruder: Wrong inputs from Keypad!!!!!");
     Serial.println("Intruder: Wrong inputs from Keypad!!!!!");
     intruderDetected = false;
   }
   //Tamper detection
-  if(GetState(LOCK_TAMPERED))
+  if(System_GetState(LOCK_TAMPERED))
   {
     digitalWrite(LED_INTRUSION,HIGH);
     char countryCodePhoneNo[15] = {0};
-    digitalWrite(BUZZER,HIGH);
-    SetState(BUZZER_ON,true);
+    System_ActuateBuzzer(true);
     SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
     SendSMS(countryCodePhoneNo,"Tamper detected!!!!!");
     Serial.println("Tamper detected!!!!!"); 
-    SetState(LOCK_TAMPERED,false);
+    System_SetState(LOCK_TAMPERED,false);
   }
   //Fingerprint
   /*
@@ -163,13 +160,11 @@ void ProcessBluetoothData(void)
       switch(btCode)
       {
         case '1':
-          digitalWrite(LOCK,HIGH);
-          SetState(DOOR_UNLOCKED,true);
+          System_ActuateLock(true);
           Serial.println("Door opened via bluetooth");
           break;
         case '2':
-          digitalWrite(LOCK,LOW);
-          SetState(DOOR_UNLOCKED,false);
+          System_ActuateLock(false);
           Serial.println("Door closed via bluetooth");
           break;
       }
@@ -213,8 +208,7 @@ void InputPassword(void)
   if(strcmp(pswd,sdPassword) == 0)
   {
     digitalWrite(LED_INTRUSION,LOW);
-    digitalWrite(LOCK,HIGH);
-    SetState(DOOR_UNLOCKED,true);
+    System_ActuateLock(true);
     Serial.println("Password is correct");
     Serial.println("Door Open");
   }
@@ -227,13 +221,12 @@ void InputPassword(void)
     {
       case PASSWORD_CORRECT:
         digitalWrite(LED_INTRUSION,LOW);
-        digitalWrite(LOCK,HIGH);
-        SetState(DOOR_UNLOCKED,true);
+        System_ActuateLock(true);
         Serial.println("Password is now correct");
         Serial.println("Door Open");
         break;
       case PASSWORD_INCORRECT:
-        SetState(FAILED_INPUT,true);
+        System_SetState(FAILED_INPUT,true);
         intruderDetected = true;
         break;
     }
@@ -317,7 +310,7 @@ void ChangePassword(void)
         InputNewPassword();
         break;
       case PASSWORD_INCORRECT:
-        SetState(FAILED_INPUT,true);
+        System_SetState(FAILED_INPUT,true);
         intruderDetected = true;
         break;
     }  
@@ -360,7 +353,7 @@ void AddPhoneNumber(void)
         InputPhoneNumber();
         break;
       case PASSWORD_INCORRECT:
-        SetState(FAILED_INPUT,true);
+        System_SetState(FAILED_INPUT,true);
         intruderDetected = true;
         break;
     }    
