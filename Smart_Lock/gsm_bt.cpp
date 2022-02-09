@@ -51,6 +51,7 @@ void GetCountryCodePhoneNo(char* countryCodePhoneNo,char* phoneNumber)
 void GetBluetoothData(char* bluetoothBuffer,int maxLen)
 {
   int i = 0;
+  volatile char clearSerialBT = '\0';
   while(SerialBT.available() > 0)
   {
     if(i < maxLen)
@@ -59,7 +60,7 @@ void GetBluetoothData(char* bluetoothBuffer,int maxLen)
     }
     else
     {//removes leftover bytes from SerialBT buffer
-      char clearSerialBT = SerialBT.read(); 
+      clearSerialBT = SerialBT.read(); 
     }
     i++;
   }

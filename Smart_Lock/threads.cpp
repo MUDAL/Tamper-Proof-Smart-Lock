@@ -26,7 +26,7 @@ void IRAM_ATTR Timer0ISR(void)
   {
     if(indoorButton.IsPressedOnce())
     {
-      Serial.println("Open");
+      Serial.println("Door opened via indoor button");
       digitalWrite(LOCK,HIGH);
       SetState(DOOR_UNLOCKED,true);
     }
@@ -36,7 +36,7 @@ void IRAM_ATTR Timer0ISR(void)
     if(indoorButton.IsPressedOnce() || 
        outdoorButton.IsPressedOnce())
     {
-      Serial.println("Close");
+      Serial.println("Door closed via button");
       digitalWrite(LOCK,LOW);
       SetState(DOOR_UNLOCKED,false);
     }
@@ -80,7 +80,7 @@ void IRAM_ATTR Timer1ISR(void)
     if(lockTimeout == TimeoutMillis::lock)
     {
       digitalWrite(LOCK,LOW);
-      Serial.println("Door closed");
+      Serial.println("Door closed via timeout");
       SetState(DOOR_UNLOCKED,false);
       lockTimeout = 0;
     }

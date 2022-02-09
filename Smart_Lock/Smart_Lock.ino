@@ -9,17 +9,17 @@
  * Components:
  * ESP32 inbuilt bluetooth --> Bluetooth serial
  * Keypad --> GPIO --> [(row pins: 16,22,32,33), (column pins: 25,26,27,14)]
- * SD card [+3.3v power *Consider 5v power] --> SPI --> [SPI pins: 23,19,18,5]
+ * SD card [+3.3v power] --> SPI --> [SPI pins: 23(MOSI),19(MISO),18(SCK),5(CS)]
  * RTC module [+3.3v power] --> I2C --> [pins: 21(SDA),4(SCL)]
  * GSM module [External 4.3v power] --> UART --> [UART2 Tx pin: 17]
- * -Fingerprint scanner --> UART --> [UART1 pins: 9,10]
+ * -Fingerprint scanner --> UART --> [UART1 pins: 9(D2),10(D3)]
  * Indoor button to open/close the door --> GPIO with external pullup + Timer Interrupt --> 34
  * Outdoor button to close the door --> GPIO with external pullup + Timer Interrupt --> 35
  * -Electromagnetic lock --> GPIO --> 13
  * IR sensor --> GPIO Interrupt --> 36
  * LED to signify the lock is awaiting an input --> GPIO --> 2
  * LED to signify an incorrect input --> GPIO --> 15
- * -Active Buzzer --> GPIO --> 12
+ * Active Buzzer --> GPIO --> 12
  * 
  * Helpful libraries:
  * Wire.h
@@ -68,6 +68,7 @@ void setup()
   pinMode(LED_AWAITING_INPUT,OUTPUT);
   pinMode(LED_INTRUSION,OUTPUT);
   Wire.begin(21,4); //SDA pin, SCL pin
+  rtc.begin();
   Serial.begin(115200);
   Serial2.begin(9600,SERIAL_8N1,-1,17); //for SIM800L
   SerialBT.begin("Smart Door");
@@ -109,11 +110,11 @@ void loop()
   if(intruderDetected)
   {
     char countryCodePhoneNo[15] = {0};
-    Serial.println("Intruder!!!!!");
     digitalWrite(BUZZER,HIGH);
     SetState(BUZZER_ON,true);
     SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
-    SendSMS(countryCodePhoneNo,"Intruder!!!!!");
+    SendSMS(countryCodePhoneNo,"Intruder: Wrong inputs from Keypad!!!!!");
+    Serial.println("Intruder: Wrong inputs from Keypad!!!!!");
     intruderDetected = false;
   }
   //Tamper detection
@@ -121,11 +122,11 @@ void loop()
   {
     digitalWrite(LED_INTRUSION,HIGH);
     char countryCodePhoneNo[15] = {0};
-    Serial.println("Tamper detected!!!!!"); 
     digitalWrite(BUZZER,HIGH);
     SetState(BUZZER_ON,true);
     SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
     SendSMS(countryCodePhoneNo,"Tamper detected!!!!!");
+    Serial.println("Tamper detected!!!!!"); 
     SetState(LOCK_TAMPERED,false);
   }
   //Fingerprint
@@ -144,25 +145,32 @@ void ProcessBluetoothData(void)
     Serial.println(pswd);
     if(strcmp(pswd,sdPassword) == 0)
     {
-      SerialBT.print("\nSmart lock request codes:\n" 
+      Serial.println("Password is correct");
+      SerialBT.print("\nSmart lock bluetooth codes:\n" 
                      "1. To open the door\n"
                      "2. To close the door\n"
                      "3. To set the time\n"
                      "4. To get security report\n");
-      char requestCode = '\0';
+      char btCode = '\0';
       while(1)
       {
-        GetBluetoothData(&requestCode,1);
-        if(requestCode != '\0') 
+        GetBluetoothData(&btCode,1);
+        if(btCode != '\0') 
         {
           break;
         }
       }
-      switch(requestCode)
+      switch(btCode)
       {
         case '1':
-          Serial.println("Password is correct");
-          Serial.println("Door Open");
+          digitalWrite(LOCK,HIGH);
+          SetState(DOOR_UNLOCKED,true);
+          Serial.println("Door opened via bluetooth");
+          break;
+        case '2':
+          digitalWrite(LOCK,LOW);
+          SetState(DOOR_UNLOCKED,false);
+          Serial.println("Door closed via bluetooth");
           break;
       }
     }
