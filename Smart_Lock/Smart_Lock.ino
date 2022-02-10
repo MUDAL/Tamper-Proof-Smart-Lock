@@ -156,9 +156,11 @@ void ProcessBluetoothData(void)
       char btCode = '\0';
       while(1)
       {
+        digitalWrite(LED_INPUT,HIGH);
         GetBluetoothData(&btCode,1);
         if(btCode != '\0') 
         {
+          digitalWrite(LED_INPUT,LOW);
           break;
         }
       }
