@@ -7,14 +7,13 @@
 enum States
 {
   FAILED_INPUT,
-  LOCK_TAMPERED
+  LOCK_TAMPERED,
+  DOOR_UNLOCKED,
+  BUZZER_ON
 };
 
 extern void System_SetState(int state,bool val);
 extern bool System_GetState(int state);
-extern void System_ActuateBuzzer(bool val);
-extern bool System_IsBuzzerOn(void);
-extern void System_ActuateLock(bool val);
-extern bool System_IsDoorOpen(void);
+extern void ActuateOutput(int outputDev,bool val);
 
 #endif //DOOR_LOCK_SYSTEM_H

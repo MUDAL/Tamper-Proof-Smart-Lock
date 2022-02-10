@@ -9,7 +9,7 @@
  * Components:
  * ESP32 inbuilt bluetooth --> Bluetooth serial
  * Keypad --> GPIO --> [(row pins: 16,22,32,33), (column pins: 25,26,27,14)]
- * SD card [+3.3v power] --> SPI --> [SPI pins: 23(MOSI),19(MISO),18(SCK),5(CS)]
+ * SD card [+5v power] --> SPI --> [SPI pins: 23(MOSI),19(MISO),18(SCK),5(CS)]
  * RTC module [+3.3v power] --> I2C --> [pins: 21(SDA),4(SCL)]
  * GSM module [External 4.3v power] --> UART --> [UART2 Tx pin: 17]
  * -Fingerprint scanner --> UART --> [UART1 pins: 9(D2),10(D3)]
@@ -18,7 +18,7 @@
  * -Electromagnetic lock --> GPIO --> 13
  * IR sensor --> GPIO Interrupt --> 36
  * LED to signify the lock is awaiting an input --> GPIO --> 2
- * LED to signify an incorrect input --> GPIO --> 15
+ * LED to signify an intrusion --> GPIO --> 15
  * Active Buzzer --> GPIO --> 12
  * 
  * Helpful libraries:
@@ -30,8 +30,9 @@
  * FS.h
  * BluetoothSerial.h
 */
-#define LED_AWAITING_INPUT    2
-#define LED_INTRUSION         15
+#define LED_INPUT             0 //Yellow
+#define LED_PASSWORD          2 //Blue
+#define LED_INTRUSION         15 //Red
 
 //Password states
 typedef enum 
@@ -52,6 +53,7 @@ bool intruderDetected = false;
 //Functions
 void ProcessBluetoothData(void);
 void GetKeypadData(char* keyBuffer);
+void IndicatePasswordQuery(void);
 void InputPassword(void);
 pw_s RetryPassword(char* keyBuffer,char* password);
 void InputNewPassword(void);
@@ -64,7 +66,8 @@ void setup()
   setCpuFrequencyMhz(80);
   pinMode(BUZZER,OUTPUT);
   pinMode(LOCK,OUTPUT);
-  pinMode(LED_AWAITING_INPUT,OUTPUT);
+  pinMode(LED_INPUT,OUTPUT);
+  pinMode(LED_PASSWORD,OUTPUT);
   pinMode(LED_INTRUSION,OUTPUT);
   Wire.begin(21,4); //SDA pin, SCL pin
   rtc.begin();
@@ -89,19 +92,21 @@ void loop()
     switch(key)
     {
       case '*':
-        digitalWrite(LED_AWAITING_INPUT,HIGH);
+        digitalWrite(LED_PASSWORD,HIGH);
         InputPassword();
-        digitalWrite(LED_AWAITING_INPUT,LOW);
+        digitalWrite(LED_PASSWORD,LOW);
         break;
       case 'C':
-        digitalWrite(LED_AWAITING_INPUT,HIGH);
+        digitalWrite(LED_PASSWORD,HIGH);
         ChangePassword();
-        digitalWrite(LED_AWAITING_INPUT,LOW);
+        digitalWrite(LED_PASSWORD,LOW);
+        digitalWrite(LED_INPUT,LOW);
         break;
       case 'A':
-        digitalWrite(LED_AWAITING_INPUT,HIGH);
+        digitalWrite(LED_PASSWORD,HIGH);
         AddPhoneNumber();
-        digitalWrite(LED_AWAITING_INPUT,LOW);
+        digitalWrite(LED_PASSWORD,LOW);
+        digitalWrite(LED_INPUT,LOW);
         break;
     }
   }
@@ -109,7 +114,7 @@ void loop()
   if(intruderDetected)
   {
     char countryCodePhoneNo[15] = {0};
-    System_ActuateBuzzer(true);
+    ActuateOutput(BUZZER,true);
     SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
     SendSMS(countryCodePhoneNo,"Intruder: Wrong inputs from Keypad!!!!!");
     Serial.println("Intruder: Wrong inputs from Keypad!!!!!");
@@ -120,7 +125,7 @@ void loop()
   {
     digitalWrite(LED_INTRUSION,HIGH);
     char countryCodePhoneNo[15] = {0};
-    System_ActuateBuzzer(true);
+    ActuateOutput(BUZZER,true);
     SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
     SendSMS(countryCodePhoneNo,"Tamper detected!!!!!");
     Serial.println("Tamper detected!!!!!"); 
@@ -160,11 +165,11 @@ void ProcessBluetoothData(void)
       switch(btCode)
       {
         case '1':
-          System_ActuateLock(true);
+          ActuateOutput(LOCK,true);
           Serial.println("Door opened via bluetooth");
           break;
         case '2':
-          System_ActuateLock(false);
+          ActuateOutput(LOCK,false);
           Serial.println("Door closed via bluetooth");
           break;
       }
@@ -200,6 +205,13 @@ void GetKeypadData(char* keyBuffer)
   }  
 }
 
+void IndicatePasswordQuery(void)
+{
+  digitalWrite(LED_PASSWORD,LOW);
+  delay(1000);
+  digitalWrite(LED_PASSWORD,HIGH);
+}
+
 void InputPassword(void)
 {
   char pswd[MAX_PASSWORD_LEN] = {0};
@@ -208,7 +220,7 @@ void InputPassword(void)
   if(strcmp(pswd,sdPassword) == 0)
   {
     digitalWrite(LED_INTRUSION,LOW);
-    System_ActuateLock(true);
+    ActuateOutput(LOCK,true);
     Serial.println("Password is correct");
     Serial.println("Door Open");
   }
@@ -221,7 +233,7 @@ void InputPassword(void)
     {
       case PASSWORD_CORRECT:
         digitalWrite(LED_INTRUSION,LOW);
-        System_ActuateLock(true);
+        ActuateOutput(LOCK,true);
         Serial.println("Password is now correct");
         Serial.println("Door Open");
         break;
@@ -241,6 +253,7 @@ pw_s RetryPassword(char* keyBuffer,char* password)
   {
     Serial.print("Retry: ");
     Serial.println(retry);
+    IndicatePasswordQuery();
     GetKeypadData(keyBuffer);
     retry++;
     if(strcmp(keyBuffer,password) == 0)
@@ -256,9 +269,12 @@ void InputNewPassword(void)
 {
   char pswd[MAX_PASSWORD_LEN] = {0};
   char newPassword[MAX_PASSWORD_LEN] = {0};
+  digitalWrite(LED_INPUT,HIGH);
+  IndicatePasswordQuery();
   GetKeypadData(pswd);
   strcpy(newPassword,pswd);
   Serial.println("Reenter the new password");
+  IndicatePasswordQuery();
   GetKeypadData(pswd);
   if(strcmp(pswd,newPassword) == 0)
   {
@@ -322,6 +338,7 @@ void InputPhoneNumber(void)
   Serial.println("Enter phone number");
   char phoneNumber[12] = {0};
   char countryCodePhoneNo[15] = {0};
+  digitalWrite(LED_INPUT,HIGH);
   GetKeypadData(phoneNumber);
   GetCountryCodePhoneNo(countryCodePhoneNo,phoneNumber);
   Serial.print("Phone number:");
@@ -359,3 +376,4 @@ void AddPhoneNumber(void)
     }    
   }  
 }
+

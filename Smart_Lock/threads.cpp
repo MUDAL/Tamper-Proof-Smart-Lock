@@ -21,12 +21,12 @@ static Button outdoorButton(OUTDOOR_BUTTON);
 */
 void IRAM_ATTR Timer0ISR(void)
 {
-  if(!System_IsDoorOpen())
+  if(!System_GetState(DOOR_UNLOCKED))
   {
     if(indoorButton.IsPressedOnce())
     {
       Serial.println("Door opened via indoor button");
-      System_ActuateLock(true);
+      ActuateOutput(LOCK,true);
     }
   }
   else
@@ -35,7 +35,7 @@ void IRAM_ATTR Timer0ISR(void)
        outdoorButton.IsPressedOnce())
     {
       Serial.println("Door closed via button");
-      System_ActuateLock(false);
+      ActuateOutput(LOCK,false);
     }
   }
 }
@@ -59,23 +59,23 @@ void IRAM_ATTR Timer1ISR(void)
       failedInputTimeout = 0;
     }
   }
-  if(System_IsBuzzerOn())
+  if(System_GetState(BUZZER_ON))
   {
     buzzerTimeout++;
     if(buzzerTimeout == TimeoutMillis::buzzer)
     {
-      System_ActuateBuzzer(false);
+      ActuateOutput(BUZZER,false);
       Serial.println("Buzzer off");
       buzzerTimeout = 0;
     }
   }
   //Turn lock off to avoid power drain
-  if(System_IsDoorOpen())
+  if(System_GetState(DOOR_UNLOCKED))
   {
     lockTimeout++;
     if(lockTimeout == TimeoutMillis::lock)
     {
-      System_ActuateLock(false);
+      ActuateOutput(LOCK,false);
       Serial.println("Door closed via timeout");
       lockTimeout = 0;
     }
