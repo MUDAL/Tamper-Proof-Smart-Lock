@@ -29,7 +29,7 @@ void ActuateOutput(int outputDev,bool val)
       System_SetState(BUZZER_ON,val);
       break;
     case LOCK:
-      digitalWrite(LOCK,val);
+      digitalWrite(LOCK,!val); //inverse logic due to BJT common emitter
       System_SetState(DOOR_UNLOCKED,val);
       break;
   }
