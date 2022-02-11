@@ -12,7 +12,7 @@
  * SD card [+5v power] --> SPI --> [SPI pins: 23(MOSI),19(MISO),18(SCK),5(CS)]
  * RTC module [+3.3v power] --> I2C --> [pins: 21(SDA),4(SCL)]
  * GSM module [External 4.3v power] --> UART --> [UART2 Tx pin: 17]
- * -Fingerprint scanner --> UART --> [UART1 pins: 9(D2),10(D3)]
+ * -Fingerprint scanner --> UART --> [UART1 pins: Rx = 9(D2), Tx = 10(D3)]
  * Indoor button to open/close the door --> GPIO with external pullup + Timer Interrupt --> 34
  * Outdoor button to close the door --> GPIO with external pullup + Timer Interrupt --> 35
  * -Electromagnetic lock --> GPIO --> 13
