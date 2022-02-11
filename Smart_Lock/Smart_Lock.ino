@@ -53,13 +53,12 @@ bool intruderDetected = false;
 //Functions
 void ProcessBluetoothData(void);
 void GetKeypadData(char* keyBuffer);
-void IndicatePasswordQuery(void);
-void InputPassword(void);
+void IndicatePasswordReentry(void);
 pw_s RetryPassword(char* keyBuffer,char* password);
 void InputNewPassword(void);
-void ChangePassword(void);
 void InputPhoneNumber(void);
-void AddPhoneNumber(void);
+void CheckKey(char key);
+void HMI(char key);
 
 void setup() 
 {
@@ -89,26 +88,7 @@ void loop()
   if(!System_GetState(FAILED_INPUT))
   {
     char key = keypad.GetChar();
-    switch(key)
-    {
-      case '*':
-        digitalWrite(LED_PASSWORD,HIGH);
-        InputPassword();
-        digitalWrite(LED_PASSWORD,LOW);
-        break;
-      case 'C':
-        digitalWrite(LED_PASSWORD,HIGH);
-        ChangePassword();
-        digitalWrite(LED_PASSWORD,LOW);
-        digitalWrite(LED_INPUT,LOW);
-        break;
-      case 'A':
-        digitalWrite(LED_PASSWORD,HIGH);
-        AddPhoneNumber();
-        digitalWrite(LED_PASSWORD,LOW);
-        digitalWrite(LED_INPUT,LOW);
-        break;
-    }
+    HMI(key);
   }
   //Intruder detection
   if(intruderDetected)
@@ -156,7 +136,7 @@ void ProcessBluetoothData(void)
       char btCode = '\0';
       while(1)
       {
-        digitalWrite(LED_INPUT,HIGH);
+        digitalWrite(LED_INPUT,HIGH); //Awaiting numeric bluetooth codes
         GetBluetoothData(&btCode,1);
         if(btCode != '\0') 
         {
@@ -207,44 +187,11 @@ void GetKeypadData(char* keyBuffer)
   }  
 }
 
-void IndicatePasswordQuery(void)
+void IndicatePasswordReentry(void)
 {
   digitalWrite(LED_PASSWORD,LOW);
-  delay(1000);
+  delay(250);
   digitalWrite(LED_PASSWORD,HIGH);
-}
-
-void InputPassword(void)
-{
-  char pswd[MAX_PASSWORD_LEN] = {0};
-  Serial.println("Entering password mode");
-  GetKeypadData(pswd);
-  if(strcmp(pswd,sdPassword) == 0)
-  {
-    digitalWrite(LED_INTRUSION,LOW);
-    ActuateOutput(LOCK,true);
-    Serial.println("Password is correct");
-    Serial.println("Door Open");
-  }
-  else
-  {
-    digitalWrite(LED_INTRUSION,HIGH);
-    Serial.println("Incorrect password, 2 attempts left");
-    pw_s pswdState = RetryPassword(pswd,sdPassword);
-    switch(pswdState)
-    {
-      case PASSWORD_CORRECT:
-        digitalWrite(LED_INTRUSION,LOW);
-        ActuateOutput(LOCK,true);
-        Serial.println("Password is now correct");
-        Serial.println("Door Open");
-        break;
-      case PASSWORD_INCORRECT:
-        System_SetState(FAILED_INPUT,true);
-        intruderDetected = true;
-        break;
-    }
-  }
 }
 
 pw_s RetryPassword(char* keyBuffer,char* password)
@@ -255,7 +202,7 @@ pw_s RetryPassword(char* keyBuffer,char* password)
   {
     Serial.print("Retry: ");
     Serial.println(retry);
-    IndicatePasswordQuery();
+    IndicatePasswordReentry();
     GetKeypadData(keyBuffer);
     retry++;
     if(strcmp(keyBuffer,password) == 0)
@@ -271,12 +218,12 @@ void InputNewPassword(void)
 {
   char pswd[MAX_PASSWORD_LEN] = {0};
   char newPassword[MAX_PASSWORD_LEN] = {0};
-  digitalWrite(LED_INPUT,HIGH);
-  IndicatePasswordQuery();
+  digitalWrite(LED_INPUT,HIGH); //Awaiting input of new password
+  IndicatePasswordReentry();
   GetKeypadData(pswd);
   strcpy(newPassword,pswd);
   Serial.println("Reenter the new password");
-  IndicatePasswordQuery();
+  IndicatePasswordReentry();
   GetKeypadData(pswd);
   if(strcmp(pswd,newPassword) == 0)
   {
@@ -301,63 +248,57 @@ void InputNewPassword(void)
         Serial.println("Unable to create new password");
         break;
     } 
-  }  
-}
-
-void ChangePassword(void)
-{
-  char pswd[MAX_PASSWORD_LEN] = {0};
-  Serial.println("Enter previous password");
-  GetKeypadData(pswd);
-  if(strcmp(pswd,sdPassword) == 0)
-  {
-    digitalWrite(LED_INTRUSION,LOW);
-    Serial.println("Correct, now enter new password");
-    InputNewPassword();
   }
-  else
-  {
-    digitalWrite(LED_INTRUSION,HIGH);
-    Serial.println("Incorrect password, 2 attempts left");
-    pw_s pswdState = RetryPassword(pswd,sdPassword);
-    switch(pswdState)
-    {
-      case PASSWORD_CORRECT:
-        digitalWrite(LED_INTRUSION,LOW);
-        Serial.println("Correct, now enter new password");
-        InputNewPassword();
-        break;
-      case PASSWORD_INCORRECT:
-        System_SetState(FAILED_INPUT,true);
-        intruderDetected = true;
-        break;
-    }  
-  }
+  digitalWrite(LED_INPUT,LOW);  
 }
 
 void InputPhoneNumber(void)
 {
-  Serial.println("Enter phone number");
   char phoneNumber[12] = {0};
   char countryCodePhoneNo[15] = {0};
-  digitalWrite(LED_INPUT,HIGH);
+  digitalWrite(LED_INPUT,HIGH); //Awaiting phone number input
   GetKeypadData(phoneNumber);
   GetCountryCodePhoneNo(countryCodePhoneNo,phoneNumber);
   Serial.print("Phone number:");
   Serial.println(countryCodePhoneNo);
   SD_WriteFile(SD,"/pn.txt",countryCodePhoneNo);  
+  digitalWrite(LED_INPUT,LOW);
 }
 
-void AddPhoneNumber(void)
+void CheckKey(char key)
 {
+  switch(key)
+  {
+    case '*':
+      ActuateOutput(LOCK,true);
+      Serial.println("Door Open");
+      break;
+    case 'C':
+      Serial.println("Enter new password");
+      InputNewPassword();
+      break;
+    case 'A':
+      Serial.println("Enter phone number");
+      InputPhoneNumber();
+      break;
+  }  
+}
+
+void HMI(char key)
+{
+  if(key != '*' && key != 'C' && key != 'A')
+  {
+    return;
+  }
   char pswd[MAX_PASSWORD_LEN] = {0};
+  digitalWrite(LED_PASSWORD,HIGH); //Awaiting password 
   Serial.println("Enter the password");
   GetKeypadData(pswd);
   if(strcmp(pswd,sdPassword) == 0)
   {
     digitalWrite(LED_INTRUSION,LOW);
     Serial.println("Password is correct");
-    InputPhoneNumber();
+    CheckKey(key);
   }
   else
   {
@@ -369,13 +310,14 @@ void AddPhoneNumber(void)
       case PASSWORD_CORRECT:
         digitalWrite(LED_INTRUSION,LOW);
         Serial.println("Password is correct");
-        InputPhoneNumber();
+        CheckKey(key);
         break;
       case PASSWORD_INCORRECT:
         System_SetState(FAILED_INPUT,true);
         intruderDetected = true;
         break;
     }    
-  }  
+  }
+  digitalWrite(LED_PASSWORD,LOW);   
 }
 
