@@ -66,7 +66,6 @@ void setup()
   setCpuFrequencyMhz(80);
   pinMode(BUZZER,OUTPUT);
   pinMode(LOCK,OUTPUT);
-  ActuateOutput(LOCK,false); 
   pinMode(LED_INPUT,OUTPUT);
   pinMode(LED_PASSWORD,OUTPUT);
   pinMode(LED_INTRUSION,OUTPUT);
