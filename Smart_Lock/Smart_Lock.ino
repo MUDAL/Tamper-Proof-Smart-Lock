@@ -1,5 +1,5 @@
 #include <Wire.h>
-#include "EEPROM.h"
+#include "EEPROM.h" //To access ESP32 flash memory
 #include "RTClib.h" //Version 1.3.3
 #include "sd_card.h"
 #include "wireless_comm.h"
@@ -193,19 +193,25 @@ void GetKeypadData(char* keyBuffer)
 
 void StorePassword(char* password)
 {
-  //starting address of EEPROM memory to store password -> 0
-  EEPROM.writeString(0,password);
+  DisableThreads();
+  //Critical section to avoid Guru Meditation Error
+  //This error occurs when an interrupt is fired while accessing the flash memory
+  EEPROM.writeString(0,password); //starting address --> 0
   EEPROM.commit();
+  EnableThreads();
 }
 
 void GetPassword(char* pswdBuffer)
 {
+  DisableThreads();
+  //Critical section to avoid Guru Meditation Error
   int i = 0;
   while(EEPROM.readChar(i) != '\0')
   {
     pswdBuffer[i] = EEPROM.readChar(i);
     i++;
   }
+  EnableThreads();
 }
 
 void IndicatePasswordReentry(void)

@@ -13,6 +13,8 @@ namespace TimeoutMillis
   const int lock = 8000;
 };
 
+static hw_timer_t* timer0;
+static hw_timer_t* timer1;
 static Button indoorButton(INDOOR_BUTTON);
 static Button outdoorButton(OUTDOOR_BUTTON);
 
@@ -98,12 +100,27 @@ void Threads_Init(void)
 {
   pinMode(IR_SENSOR,INPUT);
   attachInterrupt(IR_SENSOR,GPIO36ISR,CHANGE);
-  hw_timer_t* timer0 = timerBegin(0,80,true); //timer 0, prescaler = 80
+  timer0 = timerBegin(0,80,true); //timer 0, prescaler = 80
   timerAttachInterrupt(timer0,Timer0ISR,true);
   timerAlarmWrite(timer0,15000,true); //15ms periodic timer interrupt
   timerAlarmEnable(timer0);
-  hw_timer_t* timer1 = timerBegin(1,80,true); //timer 1, prescaler = 80
+  timer1 = timerBegin(1,80,true); //timer 1, prescaler = 80
   timerAttachInterrupt(timer1,Timer1ISR,true);
   timerAlarmWrite(timer1,1000,true); //1ms periodic timer interrupt
   timerAlarmEnable(timer1);  
 }
+
+void DisableThreads(void)
+{
+  detachInterrupt(IR_SENSOR);
+  timerAlarmDisable(timer0);
+  timerAlarmDisable(timer1);
+}
+
+void EnableThreads(void)
+{
+  attachInterrupt(IR_SENSOR,GPIO36ISR,CHANGE);
+  timerAlarmEnable(timer0);
+  timerAlarmEnable(timer1);
+}
+
