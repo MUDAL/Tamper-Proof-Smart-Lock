@@ -1,4 +1,5 @@
 #include <Wire.h>
+#include "EEPROM.h"
 #include "RTClib.h" //Version 1.3.3
 #include "sd_card.h"
 #include "wireless_comm.h"
@@ -34,6 +35,7 @@
 #define LED_INPUT             0 //Yellow
 #define LED_PASSWORD          2 //Blue
 #define LED_INTRUSION         15 //Red
+#define MAX_PASSWORD_LEN      20 
 
 //Password states
 typedef enum 
@@ -45,7 +47,6 @@ typedef enum
 //Variables
 BluetoothSerial SerialBT; 
 RTC_DS3231 rtc; 
-char sdPassword[MAX_PASSWORD_LEN] = {0}; //Stored password
 int rowPins[NUMBER_OF_ROWS] = {16,22,32,33};  
 int columnPins[NUMBER_OF_COLUMNS] = {25,26,27,14};
 Keypad keypad(rowPins,columnPins); 
@@ -54,6 +55,8 @@ bool intruderDetected = false;
 //Functions
 void ProcessBluetoothData(void);
 void GetKeypadData(char* keyBuffer);
+void StorePassword(char* password);
+void GetPassword(char* pswdBuffer);
 void IndicatePasswordReentry(void);
 pw_s RetryPassword(char* keyBuffer,char* password);
 void InputNewPassword(void);
@@ -70,14 +73,12 @@ void setup()
   pinMode(LED_PASSWORD,OUTPUT);
   pinMode(LED_INTRUSION,OUTPUT);
   Wire.begin(21,4); //SDA pin, SCL pin
+  EEPROM.begin(MAX_PASSWORD_LEN);
   rtc.begin();
   Serial.begin(115200);
   Serial2.begin(9600,SERIAL_8N1,-1,17); //for SIM800L
   SerialBT.begin("Smart Door");
   SD.begin(); //Uses pins 23,19,18 and 5
-  SD_ReadFile(SD,"/pw.txt",sdPassword);
-  Serial.print("password:");
-  Serial.println(sdPassword);
   Threads_Init();
 }
 
@@ -121,12 +122,14 @@ void loop()
 void ProcessBluetoothData(void)
 {
   char pswd[MAX_PASSWORD_LEN] = {0};
+  char eepromPswd[MAX_PASSWORD_LEN] = {0};
+  GetPassword(eepromPswd);
   GetBluetoothData(pswd,MAX_PASSWORD_LEN);
   if(strcmp(pswd,"\0") != 0)
   {
     Serial.print("Received data = ");
     Serial.println(pswd);
-    if(strcmp(pswd,sdPassword) == 0)
+    if(strcmp(pswd,eepromPswd) == 0)
     {
       Serial.println("Password is correct");
       SerialBT.print("\nSmart lock bluetooth codes:\n" 
@@ -188,6 +191,23 @@ void GetKeypadData(char* keyBuffer)
   }  
 }
 
+void StorePassword(char* password)
+{
+  //starting address of EEPROM memory to store password -> 0
+  EEPROM.writeString(0,password);
+  EEPROM.commit();
+}
+
+void GetPassword(char* pswdBuffer)
+{
+  int i = 0;
+  while(EEPROM.readChar(i) != '\0')
+  {
+    pswdBuffer[i] = EEPROM.readChar(i);
+    i++;
+  }
+}
+
 void IndicatePasswordReentry(void)
 {
   digitalWrite(LED_PASSWORD,LOW);
@@ -229,8 +249,7 @@ void InputNewPassword(void)
   if(strcmp(pswd,newPassword) == 0)
   {
     Serial.println("New password successfully created");
-    strcpy(sdPassword,pswd);
-    SD_WriteFile(SD,"/pw.txt",sdPassword);
+    StorePassword(pswd);
   }
   else
   {
@@ -242,8 +261,7 @@ void InputNewPassword(void)
       case PASSWORD_CORRECT:
         digitalWrite(LED_INTRUSION,LOW);
         Serial.println("New password successfully created");
-        strcpy(sdPassword,pswd);
-        SD_WriteFile(SD,"/pw.txt",sdPassword);
+        StorePassword(pswd);
         break;
       case PASSWORD_INCORRECT:
         Serial.println("Unable to create new password");
@@ -292,10 +310,12 @@ void HMI(char key)
     return;
   }
   char pswd[MAX_PASSWORD_LEN] = {0};
+  char eepromPswd[MAX_PASSWORD_LEN] = {0};
+  GetPassword(eepromPswd);
   digitalWrite(LED_PASSWORD,HIGH); //Awaiting password 
   Serial.println("Enter the password");
   GetKeypadData(pswd);
-  if(strcmp(pswd,sdPassword) == 0)
+  if(strcmp(pswd,eepromPswd) == 0)
   {
     digitalWrite(LED_INTRUSION,LOW);
     Serial.println("Password is correct");
@@ -305,7 +325,7 @@ void HMI(char key)
   {
     digitalWrite(LED_INTRUSION,HIGH);
     Serial.println("Incorrect password, 2 attempts left");
-    pw_s pswdState = RetryPassword(pswd,sdPassword);
+    pw_s pswdState = RetryPassword(pswd,eepromPswd);
     switch(pswdState)
     {
       case PASSWORD_CORRECT:

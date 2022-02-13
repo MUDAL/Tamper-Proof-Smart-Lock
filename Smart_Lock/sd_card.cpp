@@ -14,7 +14,7 @@ void SD_ReadFile(fs::FS &fs, const char* path, char* readBuffer)
   File file = fs.open(path);
   while(file.available())
   {
-    if(i < MAX_PASSWORD_LEN)
+    if(i < SD_MAX_LEN)
     {
       readBuffer[i] = file.read();
       i++;
