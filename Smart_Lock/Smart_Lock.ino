@@ -197,9 +197,9 @@ void GetKeypadData(char* keyBuffer)
 
 void StorePassword(char* password)
 {
-  DisableThreads();
-  //Critical section to avoid Guru Meditation Error
+  //Critical section to avoid Guru Meditation Error 
   //This error occurs when an interrupt is fired while accessing the flash memory
+  DisableThreads();
   EEPROM.writeString(0,password); //starting address --> 0
   EEPROM.commit();
   EnableThreads();
@@ -207,8 +207,8 @@ void StorePassword(char* password)
 
 void GetPassword(char* pswdBuffer)
 {
-  DisableThreads();
   //Critical section to avoid Guru Meditation Error
+  DisableThreads();
   int i = 0;
   while(EEPROM.readChar(i) != '\0')
   {
@@ -315,10 +315,10 @@ void HMI(char key)
     switch(pswdState)
     {
       case PASSWORD_CORRECT:
-        Display("Correct");
         CheckKey(key);
         break;
       case PASSWORD_INCORRECT:
+        Display("Incorrect");
         System_SetState(FAILED_INPUT,true);
         intruderDetected = true;
         break;
