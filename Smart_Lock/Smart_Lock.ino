@@ -1,6 +1,7 @@
-#include <Wire.h>
 #include "EEPROM.h" //To access ESP32 flash memory
 #include "RTClib.h" //Version 1.3.3
+#include <Adafruit_GFX.h>
+#include <Adafruit_SH1106.h>
 #include "sd_card.h"
 #include "wireless_comm.h"
 #include "keypad.h"
@@ -9,9 +10,10 @@
 /*
  * Components:
  * ESP32 inbuilt bluetooth --> Bluetooth serial
- * Keypad --> GPIO --> [(row pins: 16,22,32,33), (column pins: 25,26,27,14)]
+ * Keypad --> GPIO --> [(row pins: 16,4,32,33), (column pins: 25,26,27,14)]
  * SD card [+3.3v power] --> SPI --> [SPI pins: 23(MOSI),19(MISO),18(SCK),5(CS)]
- * RTC module [+3.3v power] --> I2C --> [pins: 21(SDA),4(SCL)]
+ * OLED display [+3.3v power] --> I2C --> [pins: 21(SDA),22(SCL)]
+ * RTC module [+3.3v power] --> I2C --> [pins: 21(SDA),22(SCL)]
  * GSM module [External 4.4v power] --> UART --> [UART2 Tx pin: 17]
  * -Fingerprint scanner [+5v power] --> UART --> [UART1 pins: Rx = 9(D2), Tx = 10(D3)]
  * Indoor button to open/close the door --> GPIO with external pullup + Timer Interrupt --> 34
@@ -46,8 +48,9 @@ typedef enum
 
 //Variables
 BluetoothSerial SerialBT; 
+Adafruit_SH1106 oled(21,22); //SDA = 21, SCL = 22
 RTC_DS3231 rtc; 
-int rowPins[NUMBER_OF_ROWS] = {16,22,32,33};  
+int rowPins[NUMBER_OF_ROWS] = {16,4,32,33};  
 int columnPins[NUMBER_OF_COLUMNS] = {25,26,27,14};
 Keypad keypad(rowPins,columnPins); 
 bool intruderDetected = false;
@@ -72,8 +75,8 @@ void setup()
   pinMode(LED_INPUT,OUTPUT);
   pinMode(LED_PASSWORD,OUTPUT);
   pinMode(LED_INTRUSION,OUTPUT);
-  Wire.begin(21,4); //SDA pin, SCL pin
   EEPROM.begin(MAX_PASSWORD_LEN);
+  oled.begin(SH1106_SWITCHCAPVCC,0x3C);
   rtc.begin();
   Serial.begin(115200);
   Serial2.begin(9600,SERIAL_8N1,-1,17); //for SIM800L
