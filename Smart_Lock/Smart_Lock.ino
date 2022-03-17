@@ -1,12 +1,12 @@
 #include "EEPROM.h" //To access ESP32 flash memory
 #include "RTClib.h" //Version 1.3.3
-#include <Adafruit_GFX.h>
+#include <Adafruit_Fingerprint.h>
+#include <Adafruit_GFX.h> //Version 1.4.13
 #include <Adafruit_SH1106.h>
 #include "sd_card.h"
 #include "wireless_comm.h"
 #include "keypad.h"
 #include "threads.h"
-
 /*
  * Components:
  * ESP32 inbuilt bluetooth --> Bluetooth serial
@@ -15,7 +15,7 @@
  * OLED display [+3.3v power] --> I2C --> [pins: 21(SDA),22(SCL)]
  * RTC module [+3.3v power] --> I2C --> [pins: 21(SDA),22(SCL)]
  * GSM module [External 4.4v power] --> UART --> [UART2 Tx pin: 17]
- * -Fingerprint scanner [+5v power] --> UART --> [UART1 pins: Rx = 9(D2), Tx = 10(D3)]
+ * -Fingerprint scanner [+3.3v power] --> UART remapped --> [UART1 Rx:0, Tx:15]
  * Indoor button to open/close the door --> GPIO with external pullup + Timer Interrupt --> 34
  * Outdoor button to close the door --> GPIO with external pullup + Timer Interrupt --> 35
  * -Electromagnetic lock --> GPIO --> 13
@@ -25,7 +25,8 @@
  * LED to signify an intrusion --> GPIO --> 15
  * Active Buzzer --> GPIO --> 12
 */
-#define MAX_PASSWORD_LEN      20 
+
+#define BUFFER_SIZE  20 //Max buffer size 
 
 //Password states
 typedef enum 
@@ -36,6 +37,7 @@ typedef enum
 
 //Variables
 BluetoothSerial SerialBT; 
+Adafruit_Fingerprint finger = Adafruit_Fingerprint(&Serial1);
 Adafruit_SH1106 oled(21,22); //SDA = 21, SCL = 22
 RTC_DS3231 rtc; 
 int rowPins[NUMBER_OF_ROWS] = {16,4,32,33};  
@@ -61,7 +63,7 @@ void setup()
   setCpuFrequencyMhz(80);
   pinMode(BUZZER,OUTPUT);
   pinMode(LOCK,OUTPUT);
-  EEPROM.begin(MAX_PASSWORD_LEN);
+  EEPROM.begin(BUFFER_SIZE);
   oled.begin(SH1106_SWITCHCAPVCC,0x3C);
   oled.setTextSize(1);
   oled.setTextColor(WHITE);
@@ -69,9 +71,11 @@ void setup()
   oled.display();
   rtc.begin();
   Serial.begin(115200);
+  Serial1.begin(115200);
   Serial2.begin(9600,SERIAL_8N1,-1,17); //for SIM800L
   SerialBT.begin("Smart Door");
   SD.begin(); //Uses pins 23,19,18 and 5
+  finger.begin(57600); //data rate for fingerprint scanner
   Threads_Init();
 }
 
@@ -79,7 +83,7 @@ void loop()
 {
   //Bluetooth
   ProcessBluetoothData();
-  //HMI (Keypad + OLED)
+  //HMI (Keypad + OLED + Fingerprint)
   if(!System_GetState(FAILED_INPUT))
   {
     char key = keypad.GetChar();
@@ -103,10 +107,6 @@ void loop()
     SendSMS(countryCodePhoneNo,"Tamper detected!!!!!"); 
     System_SetState(LOCK_TAMPERED,false);
   }
-  //Fingerprint
-  /*
-   * Place code here
-  */
 }
 
 void Display(char* msg1,int msg2,int row,int col)
@@ -132,10 +132,10 @@ void Display(char* msg1,char* msg2,int row,int col)
 
 void ProcessBluetoothData(void)
 {
-  char pswd[MAX_PASSWORD_LEN] = {0};
-  char eepromPswd[MAX_PASSWORD_LEN] = {0};
+  char pswd[BUFFER_SIZE] = {0};
+  char eepromPswd[BUFFER_SIZE] = {0};
   GetPassword(eepromPswd);
-  GetBluetoothData(pswd,MAX_PASSWORD_LEN);
+  GetBluetoothData(pswd,BUFFER_SIZE);
   if(strcmp(pswd,"\0") != 0)
   {
     if(strcmp(pswd,eepromPswd) == 0)
@@ -143,8 +143,8 @@ void ProcessBluetoothData(void)
       SerialBT.print("\nSmart lock bluetooth codes:\n" 
                      "1. To open the door\n"
                      "2. To close the door\n"
-                     "3. To set the time\n"
-                     "4. To get security report\n");
+                     "3. To get security report\n"
+                     "4. To set the time\n");
       char btCode = '\0';
       while(1)
       {
@@ -185,7 +185,7 @@ void GetKeypadData(char* keyBuffer)
         keyBuffer[i] = '\0';
         return;
       default:
-        if(i < MAX_PASSWORD_LEN)
+        if(i < BUFFER_SIZE)
         {
           keyBuffer[i] = key;
           i++;
@@ -238,8 +238,8 @@ pw_s RetryPassword(char* keyBuffer,char* password)
 
 void InputNewPassword(void)
 {
-  char pswd[MAX_PASSWORD_LEN] = {0};
-  char newPassword[MAX_PASSWORD_LEN] = {0};
+  char pswd[BUFFER_SIZE] = {0};
+  char newPassword[BUFFER_SIZE] = {0};
   GetKeypadData(pswd);
   strcpy(newPassword,pswd);
   Display("Reenter new password");
@@ -277,31 +277,46 @@ void InputPhoneNumber(void)
 
 void CheckKey(char key)
 {
-  switch(key)
+  if(key == '*')
   {
-    case '*':
-      Display("Correct");
-      ActuateOutput(LOCK,true);
-      break;
-    case 'C':
-      Display("Correct\nEnter new password");
-      InputNewPassword();
-      break;
-    case 'A':
-      Display("Correct\nEnter phone number");
-      InputPhoneNumber();
-      break;
-  }  
+    Display("Correct");
+    ActuateOutput(LOCK,true);
+  }
+  else if(key == 'A')
+  {
+    Display("Correct. Press:\n0.New password\n"
+            "1.Phone number\n"
+            "2.Enrol finger\n"
+            "3.Delete fingerprint\n"
+            "4.Clear all prints\n");
+    char getKey = '\0';
+    while(getKey != 'B')
+    {
+      getKey = keypad.GetChar();
+      if(getKey == '0')
+      {
+        Display("Enter new password");
+        InputNewPassword();
+        break;
+      }
+      else if(getKey == '1')
+      {
+        Display("Enter phone number");
+        InputPhoneNumber();
+        break;
+      }
+    }
+  }
 }
 
 void HMI(char key)
 {
-  if(key != '*' && key != 'C' && key != 'A')
+  if(key != '*' && key != 'A')
   {
     return;
   }
-  char pswd[MAX_PASSWORD_LEN] = {0};
-  char eepromPswd[MAX_PASSWORD_LEN] = {0};
+  char pswd[BUFFER_SIZE] = {0};
+  char eepromPswd[BUFFER_SIZE] = {0};
   GetPassword(eepromPswd);
   Display("Enter password");
   GetKeypadData(pswd);
