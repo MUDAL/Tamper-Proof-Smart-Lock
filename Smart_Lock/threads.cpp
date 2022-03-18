@@ -6,17 +6,75 @@
 #define OUTDOOR_BUTTON   35
 #define IR_SENSOR        36 //VP pin
 
-namespace TimeoutMillis
-{
-  const int failedInput = 10000;
-  const int buzzer = 10000;
-  const int lock = 8000;
-};
-
+const int tSystemHalt = 10000; //time taken for system to halt
+const int tLockOn = 8000; //time taken for lock to be on
 static hw_timer_t* timer0;
 static hw_timer_t* timer1;
 static Button indoorButton(INDOOR_BUTTON);
 static Button outdoorButton(OUTDOOR_BUTTON);
+
+static void HandleFailedInput(void)
+{
+  static int failedInputTimeout = 0;
+  if(System_GetState(FAILED_INPUT))
+  {
+    failedInputTimeout++;
+    if(failedInputTimeout == tSystemHalt)
+    {
+      //returns access to the keypad
+      System_SetState(FAILED_INPUT,false);
+      failedInputTimeout = 0;
+    }
+  }
+}
+
+static void HandleActiveBuzzer(void)
+{
+  static int buzzerTimeout = 0;
+  if(System_GetState(BUZZER_ON))
+  {
+    buzzerTimeout++;
+    if(buzzerTimeout == tSystemHalt)
+    {
+      ActuateOutput(BUZZER,false);
+      buzzerTimeout = 0;
+    }
+  }  
+}
+
+static void HandleLock(void)
+{
+  static int lockTimeout = 0;
+  //Turn lock off to avoid power drain
+  if(System_GetState(DOOR_UNLOCKED))
+  {
+    lockTimeout++;
+    if(lockTimeout == tLockOn)
+    {
+      ActuateOutput(LOCK,false);
+      lockTimeout = 0;
+    }
+  }
+  else
+  {//If door is locked by other means (buttons)
+    lockTimeout = 0;
+  }  
+}
+
+static void HandleFingerprint(void)
+{
+  static int tInvalidPrint = 0;
+  if(System_GetState(INVALID_FINGERPRINT))
+  {
+    tInvalidPrint++;
+    if(tInvalidPrint == tSystemHalt)
+    {
+      //returns access to fingerprint module
+      System_SetState(INVALID_FINGERPRINT,false);
+      tInvalidPrint = 0;
+    }
+  }  
+}
 
 /*
  * @brief Periodically polls and de-bounces the buttons
@@ -27,7 +85,6 @@ void IRAM_ATTR Timer0ISR(void)
   {
     if(indoorButton.IsPressedOnce())
     {
-      Serial.println("Door opened via indoor button");
       ActuateOutput(LOCK,true);
     }
   }
@@ -36,7 +93,6 @@ void IRAM_ATTR Timer0ISR(void)
     if(indoorButton.IsPressedOnce() || 
        outdoorButton.IsPressedOnce())
     {
-      Serial.println("Door closed via button");
       ActuateOutput(LOCK,false);
     }
   }
@@ -47,45 +103,10 @@ void IRAM_ATTR Timer0ISR(void)
 */
 void IRAM_ATTR Timer1ISR(void)
 {
-  static int failedInputTimeout = 0;
-  static int buzzerTimeout = 0;
-  static int lockTimeout = 0;
-  if(System_GetState(FAILED_INPUT))
-  {
-    failedInputTimeout++;
-    if(failedInputTimeout == TimeoutMillis::failedInput)
-    {
-      //returns access to the lock 
-      Serial.println("Access restored");
-      System_SetState(FAILED_INPUT,false);
-      failedInputTimeout = 0;
-    }
-  }
-  if(System_GetState(BUZZER_ON))
-  {
-    buzzerTimeout++;
-    if(buzzerTimeout == TimeoutMillis::buzzer)
-    {
-      ActuateOutput(BUZZER,false);
-      Serial.println("Buzzer off");
-      buzzerTimeout = 0;
-    }
-  }
-  //Turn lock off to avoid power drain
-  if(System_GetState(DOOR_UNLOCKED))
-  {
-    lockTimeout++;
-    if(lockTimeout == TimeoutMillis::lock)
-    {
-      ActuateOutput(LOCK,false);
-      Serial.println("Door closed via timeout");
-      lockTimeout = 0;
-    }
-  }
-  else
-  {
-    lockTimeout = 0;
-  }
+  HandleFailedInput();
+  HandleActiveBuzzer();
+  HandleLock();
+  HandleFingerprint();
 }
 
 /*

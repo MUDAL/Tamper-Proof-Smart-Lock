@@ -9,7 +9,8 @@ enum States
   FAILED_INPUT,
   LOCK_TAMPERED,
   DOOR_UNLOCKED,
-  BUZZER_ON
+  BUZZER_ON,
+  INVALID_FINGERPRINT
 };
 
 extern void System_SetState(int state,bool val);

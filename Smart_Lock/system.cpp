@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "system.h"
 
-static volatile bool stateArr[4] = {false};
+static volatile bool stateArr[5] = {false};
 
 void System_SetState(int state,bool val)
 {

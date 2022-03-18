@@ -20,9 +20,6 @@
  * Outdoor button to close the door --> GPIO with external pullup + Timer Interrupt --> 35
  * -Electromagnetic lock --> GPIO --> 13
  * IR sensor --> GPIO Interrupt --> 36
- * LED to signify expectation of specific inputs (e.g. phone no) --> GPIO --> 0
- * LED to signify expectation of password --> GPIO --> 2
- * LED to signify an intrusion --> GPIO --> 15
  * Active Buzzer --> GPIO --> 12
 */
 
@@ -43,7 +40,7 @@ RTC_DS3231 rtc;
 int rowPins[NUMBER_OF_ROWS] = {16,4,32,33};  
 int columnPins[NUMBER_OF_COLUMNS] = {25,26,27,14};
 Keypad keypad(rowPins,columnPins); 
-bool intruderDetected = false;
+int invalidPrints = 0;
 
 //Functions
 void Display(char* msg1,int msg2 = -1,int row = 1,int col = 1);
@@ -55,8 +52,10 @@ void GetPassword(char* pswdBuffer);
 pw_s RetryPassword(char* keyBuffer,char* password);
 void InputNewPassword(void);
 void InputPhoneNumber(void);
+void IntruderAlert(char* msg);
 void CheckKey(char key);
 void HMI(char key);
+int FindFingerprint(void);
 
 void setup() 
 {
@@ -83,28 +82,43 @@ void loop()
 {
   //Bluetooth
   ProcessBluetoothData();
-  //HMI (Keypad + OLED + Fingerprint)
+  //HMI (Keypad + OLED)
   if(!System_GetState(FAILED_INPUT))
   {
     char key = keypad.GetChar();
     HMI(key);
   }
-  //Intruder detection
-  if(intruderDetected)
+  //Fingerprint detection
+  if(!System_GetState(INVALID_FINGERPRINT))
   {
-    char countryCodePhoneNo[15] = {0};
-    ActuateOutput(BUZZER,true);
-    SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
-    SendSMS(countryCodePhoneNo,"Intruder: Wrong inputs from Keypad!!!!!");
-    intruderDetected = false;
+    int f_status = FindFingerprint();
+    switch(f_status)
+    {
+      case FINGERPRINT_OK:
+        ActuateOutput(LOCK,true);
+        break;
+      case FINGERPRINT_NOTFOUND:
+        if(invalidPrints < 2)
+        {
+          Display("Retry:",invalidPrints + 1); 
+        }
+        else
+        {
+          System_SetState(INVALID_FINGERPRINT,true);
+          Display("Invalid fingerprint");
+          IntruderAlert("Unregistered fingerprints detected");
+          oled.clearDisplay();
+          oled.display();
+          invalidPrints = 0;        
+        }
+        invalidPrints++;
+        break;
+    }    
   }
   //Tamper detection
   if(System_GetState(LOCK_TAMPERED))
   {
-    char countryCodePhoneNo[15] = {0};
-    ActuateOutput(BUZZER,true);
-    SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo);  
-    SendSMS(countryCodePhoneNo,"Tamper detected!!!!!"); 
+    IntruderAlert("Tamper detected!!!!!"); 
     System_SetState(LOCK_TAMPERED,false);
   }
 }
@@ -141,10 +155,10 @@ void ProcessBluetoothData(void)
     if(strcmp(pswd,eepromPswd) == 0)
     {
       SerialBT.print("\nSmart lock bluetooth codes:\n" 
-                     "1. To open the door\n"
-                     "2. To close the door\n"
-                     "3. To get security report\n"
-                     "4. To set the time\n");
+                     "0. To open the door\n"
+                     "1. To close the door\n"
+                     "2. To get security report\n"
+                     "3. To set the time\n");
       char btCode = '\0';
       while(1)
       {
@@ -156,10 +170,10 @@ void ProcessBluetoothData(void)
       }
       switch(btCode)
       {
-        case '1':
+        case '0':
           ActuateOutput(LOCK,true);
           break;
-        case '2':
+        case '1':
           ActuateOutput(LOCK,false);
           break;
       }
@@ -275,6 +289,14 @@ void InputPhoneNumber(void)
   SD_WriteFile(SD,"/pn.txt",countryCodePhoneNo);  
 }
 
+void IntruderAlert(char* msg)
+{
+  char countryCodePhoneNo[15] = {0};
+  ActuateOutput(BUZZER,true);
+  SD_ReadFile(SD,"/pn.txt",countryCodePhoneNo); 
+  SendSMS(countryCodePhoneNo,msg);  
+}
+
 void CheckKey(char key)
 {
   if(key == '*')
@@ -284,7 +306,8 @@ void CheckKey(char key)
   }
   else if(key == 'A')
   {
-    Display("Correct. Press:\n0.New password\n"
+    Display("Correct. Press:\n"
+            "0.New password\n"
             "1.Phone number\n"
             "2.Enrol finger\n"
             "3.Delete fingerprint\n"
@@ -335,12 +358,32 @@ void HMI(char key)
       case PASSWORD_INCORRECT:
         Display("Incorrect");
         System_SetState(FAILED_INPUT,true);
-        intruderDetected = true;
+        IntruderAlert("Intruder: Wrong inputs from Keypad!!!!!");
         break;
     }    
   }
-  delay(2000);
+  delay(1000);
   oled.clearDisplay();
   oled.display();
+}
+
+int FindFingerprint(void) 
+{
+  int f_status = finger.getImage();
+  if(f_status != FINGERPRINT_OK)
+  {
+    return f_status;
+  }
+  f_status = finger.image2Tz();
+  if(f_status != FINGERPRINT_OK) 
+  { 
+    return f_status;
+  }
+  f_status = finger.fingerFastSearch();
+  if(f_status != FINGERPRINT_OK)  
+  {
+    return f_status;
+  }
+  return f_status;
 }
 
