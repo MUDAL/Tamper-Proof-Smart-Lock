@@ -70,11 +70,10 @@ void setup()
   oled.display();
   rtc.begin();
   Serial.begin(115200);
-  Serial1.begin(115200);
   Serial2.begin(9600,SERIAL_8N1,-1,17); //for SIM800L
   SerialBT.begin("Smart Door");
   SD.begin(); //Uses pins 23,19,18 and 5
-  finger.begin(57600); //data rate for fingerprint scanner
+  finger.begin(57600); //Baud rate for fingerprint sensor
   Threads_Init();
 }
 
@@ -95,7 +94,12 @@ void loop()
     switch(f_status)
     {
       case FINGERPRINT_OK:
+        invalidPrints = 0;
         ActuateOutput(LOCK,true);
+        Display("Valid fingerprint");
+        delay(1000);
+        oled.clearDisplay();
+        oled.display();
         break;
       case FINGERPRINT_NOTFOUND:
         if(invalidPrints < 2)
