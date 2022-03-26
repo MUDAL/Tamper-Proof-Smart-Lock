@@ -7,21 +7,6 @@
 #include "wireless_comm.h"
 #include "keypad.h"
 #include "threads.h"
-/*
- * Components:
- * ESP32 inbuilt bluetooth --> Bluetooth serial
- * Keypad --> GPIO --> [(row pins: 16,4,32,33), (column pins: 25,26,27,14)]
- * SD card [+3.3v power] --> SPI --> [SPI pins: 23(MOSI),19(MISO),18(SCK),5(CS)]
- * OLED display [+3.3v power] --> I2C --> [pins: 21(SDA),22(SCL)]
- * RTC module [+3.3v power] --> I2C --> [pins: 21(SDA),22(SCL)]
- * GSM module [External 4.4v power] --> UART --> [UART2 Tx pin: 17]
- * -Fingerprint scanner [+3.3v power] --> UART remapped --> [UART1 Rx:0, Tx:15]
- * Indoor button to open/close the door --> GPIO with external pullup + Timer Interrupt --> 34
- * Outdoor button to close the door --> GPIO with external pullup + Timer Interrupt --> 35
- * -Electromagnetic lock --> GPIO --> 13
- * IR sensor --> GPIO Interrupt --> 36
- * Active Buzzer --> GPIO --> 12
-*/
 
 #define BUFFER_SIZE  20 //Max buffer size 
 
@@ -55,6 +40,7 @@ void InputPhoneNumber(void);
 void IntruderAlert(char* msg);
 void CheckKey(char key);
 void HMI(char key);
+void StoreFingerprint(void);
 int FindFingerprint(void);
 
 void setup() 
@@ -85,7 +71,10 @@ void loop()
   if(!System_GetState(FAILED_INPUT))
   {
     char key = keypad.GetChar();
-    HMI(key);
+    if((key == '*') || (key == 'A'))
+    {
+      HMI(key);
+    }
   }
   //Fingerprint detection
   if(!System_GetState(INVALID_FINGERPRINT))
@@ -95,11 +84,9 @@ void loop()
     {
       case FINGERPRINT_OK:
         invalidPrints = 0;
-        ActuateOutput(LOCK,true);
-        Display("Valid fingerprint");
-        delay(1000);
         oled.clearDisplay();
         oled.display();
+        ActuateOutput(LOCK,true);
         break;
       case FINGERPRINT_NOTFOUND:
         if(invalidPrints < 2)
@@ -313,9 +300,8 @@ void CheckKey(char key)
     Display("Correct. Press:\n"
             "0.New password\n"
             "1.Phone number\n"
-            "2.Enrol finger\n"
-            "3.Delete fingerprint\n"
-            "4.Clear all prints\n");
+            "2.Store fingerprint\n"
+            "3.Delete fingerprints\n");
     char getKey = '\0';
     while(getKey != 'B')
     {
@@ -332,16 +318,27 @@ void CheckKey(char key)
         InputPhoneNumber();
         break;
       }
+      else if(getKey == '2')
+      {
+        Display("Place finger"); 
+        StoreFingerprint();
+        break;
+      }
+      else if(getKey == '3')
+      {
+        finger.emptyDatabase();
+        Display("Database cleared");
+        delay(1000);
+        oled.clearDisplay();
+        oled.display();
+        break;
+      }
     }
   }
 }
 
 void HMI(char key)
 {
-  if(key != '*' && key != 'A')
-  {
-    return;
-  }
   char pswd[BUFFER_SIZE] = {0};
   char eepromPswd[BUFFER_SIZE] = {0};
   GetPassword(eepromPswd);
@@ -369,6 +366,40 @@ void HMI(char key)
   delay(1000);
   oled.clearDisplay();
   oled.display();
+}
+
+void StoreFingerprint(void)
+{
+  int id = 1;
+  //Searching for free slot to store the fingerprint template
+  for(int i = 1; i <= 127; i++)
+  {
+    if(finger.loadModel(i) != FINGERPRINT_OK)
+    {
+      id = i;
+      break;
+    }
+  }   
+  while(finger.getImage() != FINGERPRINT_OK){}
+  while(finger.image2Tz(1) != FINGERPRINT_OK){}
+  Display("Remove finger then\nplace same finger\nagain");
+  while(finger.getImage() != FINGERPRINT_OK){}
+  while(finger.image2Tz(2) != FINGERPRINT_OK){} 
+  //Creating model for fingerprint
+  if(finger.createModel() == FINGERPRINT_OK) 
+  {
+    if(finger.storeModel(id) == FINGERPRINT_OK) 
+    {
+      Display("Fingerprint stored!");
+    } 
+  } 
+  else
+  {
+    Display("Prints unmatched!");
+  }
+  delay(1000);
+  oled.clearDisplay();
+  oled.display();  
 }
 
 int FindFingerprint(void) 
