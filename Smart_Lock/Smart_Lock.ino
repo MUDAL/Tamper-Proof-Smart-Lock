@@ -370,7 +370,7 @@ void HMI(char key)
 
 void StoreFingerprint(void)
 {
-  int id = 1;
+  int id = 0;
   //Searching for free slot to store the fingerprint template
   for(int i = 1; i <= 127; i++)
   {
@@ -379,7 +379,15 @@ void StoreFingerprint(void)
       id = i;
       break;
     }
-  }   
+  }
+  if(id == 0)
+  {
+    Display("Memory full");
+    delay(1000);
+    oled.clearDisplay();
+    oled.display();
+    return; //Exit 
+  }
   while(finger.getImage() != FINGERPRINT_OK){}
   while(finger.image2Tz(1) != FINGERPRINT_OK){}
   Display("Remove finger then\nplace same finger\nagain");
