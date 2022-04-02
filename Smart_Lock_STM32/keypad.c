@@ -101,7 +101,7 @@ char Keypad_GetChar(void)
 			if(IsDebounced(j) && !prevPressed[i][j])
 			{
 				prevPressed[i][j] = true;
-				return prevPressed[i][j];
+				return keypadMatrix[i][j];
 			}
 			else if(!IsDebounced(j) && prevPressed[i][j])
 			{

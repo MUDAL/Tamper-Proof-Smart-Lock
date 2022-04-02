@@ -6,7 +6,7 @@
 #include "systick.h"
 #include "system.h"
 
-void System_Init(void)
+void System_Config(void)
 {
 	Clock_HSI_8MHz_Init();
 	SysTick_Init();
@@ -28,7 +28,7 @@ void System_Reset(void)
 	NVIC_SystemReset();
 }
 
-void System_TimerDelayMs(uint32_t delayTime)
+void System_DelayMs(uint32_t delayTime)
 {
 	SysTick_DelayMs(delayTime);
 }

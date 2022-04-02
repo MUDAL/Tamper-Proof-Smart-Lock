@@ -15,6 +15,6 @@ typedef enum
 extern void BT_Init(void);
 extern void BT_RxBufferInit(uint8_t* pBuffer,uint8_t bufferSize);
 extern void BT_Transmit(char* pData);
-extern btStatus_t BT_RxStatus(void);
+extern btStatus_t BT_Receive(void);
 
 #endif //BLUETOOTH_H

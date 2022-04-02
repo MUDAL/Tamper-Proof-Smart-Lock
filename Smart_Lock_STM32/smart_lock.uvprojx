@@ -391,56 +391,6 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>SD</GroupName>
-          <Files>
-            <File>
-              <FileName>ccsbcs.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\ccsbcs.c</FilePath>
-            </File>
-            <File>
-              <FileName>diskio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\diskio.c</FilePath>
-            </File>
-            <File>
-              <FileName>diskio.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\diskio.h</FilePath>
-            </File>
-            <File>
-              <FileName>ff.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\ff.c</FilePath>
-            </File>
-            <File>
-              <FileName>ff.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\ff.h</FilePath>
-            </File>
-            <File>
-              <FileName>ffconf.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\ffconf.h</FilePath>
-            </File>
-            <File>
-              <FileName>integer.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\integer.h</FilePath>
-            </File>
-            <File>
-              <FileName>sd_card.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\sd_card.c</FilePath>
-            </File>
-            <File>
-              <FileName>sd_card.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\sd_card.h</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>High Level Lib</GroupName>
           <Files>
             <File>

@@ -37,7 +37,7 @@ void BT_Transmit(char* pData)
 	USART_WriteChars(USART3,pData);
 }
 
-btStatus_t BT_RxStatus(void)
+btStatus_t BT_Receive(void)
 {
 	btStatus_t status = NO_DATA;
 	if(DMA_RxBufferFull(DMA1,DMA_CHANNEL3))

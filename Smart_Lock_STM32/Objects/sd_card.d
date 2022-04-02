@@ -13,5 +13,5 @@
 .\objects\sd_card.o: sd_card.h
 .\objects\sd_card.o: gpio.h
 .\objects\sd_card.o: spi.h
-.\objects\sd_card.o: system.h
 .\objects\sd_card.o: systick.h
+.\objects\sd_card.o: system.h
