@@ -7,25 +7,26 @@
 #include "bluetooth.h"
 #include "button.h"
 #include "output_device.h"
+#include "eeprom.h"
 //SD card
 #include "diskio.h"
 #include "sd_card.h"
 #include "ff.h"
 
-//Keypad, OLED, SD, Bluetooth, BUzzer, Lock, Buttons work
+//Keypad, OLED, SD, Bluetooth, Buzzer, Lock, EEPROM, Buttons work
 
-//Test codes
+//Test codes (Bluetooth)
 static uint8_t btRxBuffer[BT_BUFFERSIZE];
-//SD
+//SD card test code
 FATFS fs; //file system
 FIL fil; //file
-//FRESULT fresult; //to store the result
-uint32_t fresult;
+FRESULT fresult; //to store the result
 char buffer[1024]; //to store data
-
 //Test code for button
 uint8_t indoor = 0;
 uint8_t outdoor = 0;
+//Test code for EEPROM
+char eepromBuff[20] = {0};
 
 int main(void)
 {
@@ -49,6 +50,10 @@ int main(void)
 	f_gets(buffer,30,&fil);
 	//close file
 	fresult = f_close(&fil);
+	
+	//EEPROM test
+	//EEPROM_StoreData((uint8_t*)"Lovely day",20,0);
+	EEPROM_GetData((uint8_t*)eepromBuff,20,0);
 	
 	//Buzzer test
 	//OutputDev_Write(BUZZER,true);

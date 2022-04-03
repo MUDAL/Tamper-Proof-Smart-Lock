@@ -5,7 +5,7 @@
 #include "systick.h"
 #include "eeprom.h"
 
-void EEPROM_WritePage(uint8_t pageAddr, uint8_t* pData, uint8_t len)
+static void EEPROM_WritePage(uint8_t pageAddr, uint8_t* pData, uint8_t len)
 {
 	if(len > PAGE_SIZE)
 	{//Page size must not be exceeded.
@@ -23,7 +23,7 @@ void EEPROM_WritePage(uint8_t pageAddr, uint8_t* pData, uint8_t len)
 	SysTick_DelayMs(5);
 }
 
-void EEPROM_ReadPage(uint8_t pageAddr, uint8_t* pReceiveBuffer, uint8_t len)
+static void EEPROM_ReadPage(uint8_t pageAddr, uint8_t* pReceiveBuffer, uint8_t len)
 {
 	if(len > PAGE_SIZE)
 	{//Page size must not be exceeded.
