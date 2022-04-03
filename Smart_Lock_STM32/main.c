@@ -5,12 +5,13 @@
 #include "keypad.h"
 #include "oled.h"
 #include "bluetooth.h"
+#include "button.h"
 //SD card
 #include "diskio.h"
 #include "sd_card.h"
 #include "ff.h"
 
-//Keypad, OLED, SD, Bluetooth work
+//Keypad, OLED, SD, Bluetooth, Buttons work
 
 //Test codes
 static uint8_t btRxBuffer[BT_BUFFERSIZE];
@@ -21,6 +22,10 @@ FIL fil; //file
 uint32_t fresult;
 char buffer[1024]; //to store data
 
+//Test code for button
+uint8_t indoor = 0;
+uint8_t outdoor = 0;
+
 int main(void)
 {
 	System_Config();
@@ -30,6 +35,7 @@ int main(void)
 	BT_Init();
 	BT_RxBufferInit(btRxBuffer,BT_BUFFERSIZE);
 	BT_Transmit("What're you doing at home?"); //testing BT transmit
+	Button_Init();
 	
 	//SD
 	SD_Init();
@@ -44,6 +50,15 @@ int main(void)
 	
 	while(1)
 	{
+		//Testing buttons
+		if(Button_IsPressedOnce(INDOOR))
+		{
+			indoor++;
+		}
+		if(Button_IsPressedOnce(OUTDOOR))
+		{
+			outdoor++;
+		}
 		//Testing BT receive
 		btStatus_t status = BT_Receive();
 		switch(status)

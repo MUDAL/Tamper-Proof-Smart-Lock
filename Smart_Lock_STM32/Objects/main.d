@@ -13,6 +13,7 @@
 .\objects\main.o: keypad.h
 .\objects\main.o: oled.h
 .\objects\main.o: bluetooth.h
+.\objects\main.o: button.h
 .\objects\main.o: diskio.h
 .\objects\main.o: integer.h
 .\objects\main.o: sd_card.h

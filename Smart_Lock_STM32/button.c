@@ -2,25 +2,39 @@
 #include "gpio.h"
 #include "button.h"
 
-void Button_Init(button_t* pButton)
+static bool buttonPrevPressed[2];
+
+void Button_Init(void)
 {
-	GPIO_InputInit(pButton->GPIOx,
-								 pButton->portLevel,
-								 pButton->pin,
-								 pButton->config,
-								 GPIO_PULLUP_ENABLE);
+	//INDOOR button(PA0) and Outdoor button (PA1) Init
+	GPIO_InputInit(GPIOA,
+								 GPIO_PORT_REG_LOW,
+								 GPIO_PIN0 | GPIO_PIN1,
+								 (GPIO_PIN0_INPUT_PULLUP_OR_PULLDOWN | 
+								 GPIO_PIN1_INPUT_PULLUP_OR_PULLDOWN),
+								 GPIO_PULLUP_ENABLE);	
 }
 
-bool Button_IsPressedOnce(button_t* pButton)
+bool Button_IsPressedOnce(button_t button)
 {
-	if(!GPIO_InputRead(pButton->GPIOx,pButton->pin) && !pButton->prevPressed)
+	uint16_t gpioPin;
+	switch(button)
 	{
-		pButton->prevPressed = true;
+		case INDOOR:
+			gpioPin = GPIO_PIN0;
+			break;
+		case OUTDOOR:
+			gpioPin = GPIO_PIN1;
+			break;
+	}
+	if(!GPIO_InputRead(GPIOA,gpioPin) && !buttonPrevPressed[button])
+	{
+		buttonPrevPressed[button] = true;
 		return true;
 	}
-	else if(GPIO_InputRead(pButton->GPIOx,pButton->pin) && pButton->prevPressed)
+	else if(GPIO_InputRead(GPIOA,gpioPin) && buttonPrevPressed[button])
 	{
-		pButton->prevPressed = false;
+		buttonPrevPressed[button] = false;
 	}
 	return false;
 }

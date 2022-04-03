@@ -60,12 +60,14 @@ void SD_Init(void)
 static void SELECT(void)
 {
 	SPI_ChipSelect(GPIOA,GPIO_PIN4);
+	SysTick_DelayMs(1);
 }
 
 /* slave deselect */
 static void DESELECT(void)
 {
 	SPI_ChipDeselect(GPIOA,GPIO_PIN4);
+	SysTick_DelayMs(1);
 }
 
 /* SPI transmit a byte */
