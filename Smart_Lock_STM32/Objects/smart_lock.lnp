@@ -1,5 +1,9 @@
 --cpu Cortex-M3
 ".\objects\main.o"
+".\objects\ccsbcs.o"
+".\objects\diskio.o"
+".\objects\ff.o"
+".\objects\sd_card.o"
 ".\objects\system.o"
 ".\objects\eeprom.o"
 ".\objects\rtc.o"

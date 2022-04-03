@@ -5,14 +5,21 @@
 #include "keypad.h"
 #include "oled.h"
 #include "bluetooth.h"
+//SD card
+#include "diskio.h"
+#include "sd_card.h"
+#include "ff.h"
 
-//Keypad, OLED, Bluetooth work
-//Port the code to CubeIDE
-//Use the FATFS library from CubeIDE
+//Keypad, OLED, SD, Bluetooth work
 
 //Test codes
 static uint8_t btRxBuffer[BT_BUFFERSIZE];
-
+//SD
+FATFS fs; //file system
+FIL fil; //file
+//FRESULT fresult; //to store the result
+uint32_t fresult;
+char buffer[1024]; //to store data
 
 int main(void)
 {
@@ -23,6 +30,17 @@ int main(void)
 	BT_Init();
 	BT_RxBufferInit(btRxBuffer,BT_BUFFERSIZE);
 	BT_Transmit("What're you doing at home?"); //testing BT transmit
+	
+	//SD
+	SD_Init();
+	/*Mount SD card*/
+	fresult = f_mount(&fs, "", 0);
+	/*Open file to read file*/
+  fresult = f_open(&fil,"pn.txt",FA_READ);
+	//Read
+	f_gets(buffer,30,&fil);
+	//close file
+	fresult = f_close(&fil);
 	
 	while(1)
 	{

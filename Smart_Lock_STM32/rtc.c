@@ -52,7 +52,7 @@ static uint8_t HexToBCD(uint8_t hex)
 	uint8_t bcd;
 	uint8_t multipleOfTen = 0;
 	
-	while (hex >= 10)
+	while(hex >= 10)
 	{
 		hex -= 10;
 		multipleOfTen++;

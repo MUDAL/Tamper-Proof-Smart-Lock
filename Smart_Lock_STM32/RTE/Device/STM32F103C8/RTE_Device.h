@@ -1601,7 +1601,7 @@
 #if   ((RTE_ETH_MII_REMAP == 0) && (RTE_ETH_MII_RXD1_DEF == 0))
 #define RTE_ETH_MII_RXD1_PORT           GPIOC
 #define RTE_ETH_MII_RXD1_PIN            5
-#elif ((RTE_ETH_MII_REMAP == 1) && (RTE_ETH_MII_RXD1_REMAP == 1))
+#elif((RTE_ETH_MII_REMAP == 1) && (RTE_ETH_MII_RXD1_REMAP == 1))
 #define RTE_ETH_MII_RXD1_PORT           GPIOD
 #define RTE_ETH_MII_RXD1_PIN            10
 #else
@@ -1611,7 +1611,7 @@
 #if   ((RTE_ETH_MII_REMAP == 0) && (RTE_ETH_MII_RXD2_DEF == 0))
 #define RTE_ETH_MII_RXD2_PORT           GPIOB
 #define RTE_ETH_MII_RXD2_PIN            0
-#elif ((RTE_ETH_MII_REMAP == 1) && (RTE_ETH_MII_RXD2_REMAP == 1))
+#elif((RTE_ETH_MII_REMAP == 1) && (RTE_ETH_MII_RXD2_REMAP == 1))
 #define RTE_ETH_MII_RXD2_PORT           GPIOD
 #define RTE_ETH_MII_RXD2_PIN            11
 #else
@@ -1621,7 +1621,7 @@
 #if   ((RTE_ETH_MII_REMAP == 0) && (RTE_ETH_MII_RXD3_DEF == 0))
 #define RTE_ETH_MII_RXD3_PORT           GPIOB
 #define RTE_ETH_MII_RXD3_PIN            1
-#elif ((RTE_ETH_MII_REMAP == 1) && (RTE_ETH_MII_RXD3_REMAP == 1))
+#elif((RTE_ETH_MII_REMAP == 1) && (RTE_ETH_MII_RXD3_REMAP == 1))
 #define RTE_ETH_MII_RXD3_PORT           GPIOD
 #define RTE_ETH_MII_RXD3_PIN            12
 #else
@@ -1631,7 +1631,7 @@
 #if   ((RTE_ETH_MII_REMAP == 0) && (RTE_ETH_MII_RX_DV_DEF == 0))
 #define RTE_ETH_MII_RX_DV_PORT          GPIOA
 #define RTE_ETH_MII_RX_DV_PIN           7
-#elif ((RTE_ETH_MII_REMAP == 1) && (RTE_ETH_MII_RX_DV_REMAP == 1))
+#elif((RTE_ETH_MII_REMAP == 1) && (RTE_ETH_MII_RX_DV_REMAP == 1))
 #define RTE_ETH_MII_RX_DV_PORT          GPIOD
 #define RTE_ETH_MII_RX_DV_PIN           8
 #else
