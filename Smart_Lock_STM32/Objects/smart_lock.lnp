@@ -13,6 +13,7 @@
 ".\objects\gsm.o"
 ".\objects\oled.o"
 ".\objects\bluetooth.o"
+".\objects\output_device.o"
 ".\objects\clock.o"
 ".\objects\gpio.o"
 ".\objects\uart.o"

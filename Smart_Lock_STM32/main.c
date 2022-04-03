@@ -6,12 +6,13 @@
 #include "oled.h"
 #include "bluetooth.h"
 #include "button.h"
+#include "output_device.h"
 //SD card
 #include "diskio.h"
 #include "sd_card.h"
 #include "ff.h"
 
-//Keypad, OLED, SD, Bluetooth, Buttons work
+//Keypad, OLED, SD, Bluetooth, BUzzer, Lock, Buttons work
 
 //Test codes
 static uint8_t btRxBuffer[BT_BUFFERSIZE];
@@ -36,6 +37,7 @@ int main(void)
 	BT_RxBufferInit(btRxBuffer,BT_BUFFERSIZE);
 	BT_Transmit("What're you doing at home?"); //testing BT transmit
 	Button_Init();
+	OutputDev_Init();
 	
 	//SD
 	SD_Init();
@@ -47,6 +49,16 @@ int main(void)
 	f_gets(buffer,30,&fil);
 	//close file
 	fresult = f_close(&fil);
+	
+	//Buzzer test
+	//OutputDev_Write(BUZZER,true);
+	//System_DelayMs(3000);
+	//OutputDev_Write(BUZZER,false);
+	
+	//Lock test
+	OutputDev_Write(LOCK,true);
+	System_DelayMs(5000);
+	OutputDev_Write(LOCK,false);
 	
 	while(1)
 	{

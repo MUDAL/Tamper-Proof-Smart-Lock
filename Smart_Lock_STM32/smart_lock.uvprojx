@@ -533,6 +533,16 @@
               <FileType>5</FileType>
               <FilePath>.\bluetooth.h</FilePath>
             </File>
+            <File>
+              <FileName>output_device.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\output_device.c</FilePath>
+            </File>
+            <File>
+              <FileName>output_device.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\output_device.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

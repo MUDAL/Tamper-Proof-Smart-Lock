@@ -28,6 +28,7 @@ enum PortRegLevel
 
 #define GPIO_PIN3															1<<3
 #define GPIO_PIN3_INPUT_PULLUP_OR_PULLDOWN		GPIO_CRL_CNF3_1
+#define GPIO_PIN3_OUTPUT_MODE_2MHZ						GPIO_CRL_MODE3_1
 
 #define GPIO_PIN4															1<<4
 #define GPIO_PIN4_OUTPUT_MODE_2MHZ						GPIO_CRL_MODE4_1
