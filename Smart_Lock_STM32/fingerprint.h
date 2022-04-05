@@ -3,7 +3,8 @@
 
 /**
  *Fingerprint library adapted from Adafruit library
- *Sensor: AS608
+ *Sensor: DY50 
+ *Processor: AS608
 */
 
 #define FINGERPRINT_OK 0x00               //!< Command execution is complete
