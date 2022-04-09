@@ -4,7 +4,7 @@
 /**
 * Bluetooth: HC05/6
 */
-#define BT_BUFFERSIZE	20 //Max Rx buffer size
+
 typedef enum
 {
 	NO_DATA = 0,

@@ -621,6 +621,21 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>Generic</GroupName>
+          <Files>
+            <File>
+              <FileName>state.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\state.c</FilePath>
+            </File>
+            <File>
+              <FileName>state.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\state.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>::CMSIS</GroupName>
         </Group>
         <Group>

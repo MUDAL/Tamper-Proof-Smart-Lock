@@ -7,113 +7,338 @@
 #include "bluetooth.h"
 #include "button.h"
 #include "output_device.h"
+#include "fingerprint.h"
 #include "eeprom.h"
+#include "state.h"
 //SD card
 #include "diskio.h"
 #include "sd_card.h"
 #include "ff.h"
 
-//Keypad, OLED, SD, Bluetooth, Buzzer, Lock, EEPROM, Buttons work
+#define BUFFER_SIZE  20 //Max buffer size 
 
-//Test codes (Bluetooth)
-static uint8_t btRxBuffer[BT_BUFFERSIZE];
-//SD card test code
-FATFS fs; //file system
-FIL fil; //file
-FRESULT fresult; //to store the result
-char buffer[1024]; //to store data
-//Test code for button
-uint8_t indoor = 0;
-uint8_t outdoor = 0;
-//Test code for EEPROM
-char eepromBuff[20] = {0};
+//Password states
+typedef enum 
+{
+  PASSWORD_INCORRECT = 0,
+  PASSWORD_CORRECT
+}pw_s;
+
+//Functions
+void Display(char* msg);
+void GetKeypadData(char* keyBuffer);
+void StorePassword(char* password);
+void GetPassword(char* pswdBuffer);
+pw_s RetryPassword(char* keyBuffer,char* password);
+void InputNewPassword(void);
+void InputPhoneNumber(void);
+void IntruderAlert(char* msg);
+void CheckKey(char key);
+void HMI(char key);
+void StoreFingerprint(void);
+uint8_t FindFingerprint(void);
 
 int main(void)
 {
+	static uint8_t btRxBuffer[BUFFER_SIZE];
+	//static char sdBuffer[BUFFER_SIZE];
+	//static FATFS fs; //file system
+	//static FIL fil; //file
+	
 	System_Config();
 	Keypad_Init();
 	OLED_Init();
 	OLED_ClearScreen();
 	BT_Init();
-	BT_RxBufferInit(btRxBuffer,BT_BUFFERSIZE);
-	BT_Transmit("What're you doing at home?"); //testing BT transmit
+	BT_RxBufferInit(btRxBuffer,BUFFER_SIZE);
 	Button_Init();
 	OutputDev_Init();
+	SD_Init();
 	
 	//SD
-	SD_Init();
 	/*Mount SD card*/
-	fresult = f_mount(&fs, "", 0);
+	//f_mount(&fs, "", 0);
 	/*Open file to read file*/
-  fresult = f_open(&fil,"pn.txt",FA_READ);
+  //f_open(&fil,"pn.txt",FA_READ);
 	//Read
-	f_gets(buffer,30,&fil);
+	//f_gets(sdBuffer,20,&fil);
 	//close file
-	fresult = f_close(&fil);
-	
-	//EEPROM test
-	//EEPROM_StoreData((uint8_t*)"Lovely day",20,0);
-	EEPROM_GetData((uint8_t*)eepromBuff,20,0);
-	
-	//Buzzer test
-	//OutputDev_Write(BUZZER,true);
-	//System_DelayMs(3000);
-	//OutputDev_Write(BUZZER,false);
-	
-	//Lock test
-	OutputDev_Write(LOCK,true);
-	System_DelayMs(5000);
-	OutputDev_Write(LOCK,false);
+	//f_close(&fil);
 	
 	while(1)
 	{
-		//Testing buttons
-		if(Button_IsPressedOnce(INDOOR))
+		//Bluetooth
+		
+		//HMI (Keypad + OLED)
+		if(!GetState(FAILED_INPUT))
 		{
-			indoor++;
+			char key = Keypad_GetChar();
+			if((key == '*') || (key == 'A'))
+			{
+				HMI(key);
+			}
 		}
-		if(Button_IsPressedOnce(OUTDOOR))
-		{
-			outdoor++;
-		}
-		//Testing BT receive
-		btStatus_t status = BT_Receive();
-		switch(status)
-		{
-			case NO_DATA:
-				break;
-			case BUFFER_FULL:
-				break;
-			case IDLE_LINE:
-				BT_RxBufferInit(btRxBuffer,BT_BUFFERSIZE);
-				System_DelayMs(5000);
-				memset(btRxBuffer,'\0',BT_BUFFERSIZE);
-				break;
-		}
-		//Testing Keypad and OLED
-		char key = Keypad_GetChar();
-		switch(key)
-		{
-			case '1':
-				OLED_SetCursor(2,0);
-				OLED_WriteString("Hello world",White);
-				OLED_UpdateScreen();
-				break;
-			case '2':
-				OLED_SetCursor(2,10);
-				OLED_WriteString("What's for dinner?", White);
-				OLED_UpdateScreen();
-				break;
-			case '3':
-				OLED_SetCursor(2,20);
-				OLED_WriteString("Store fingerprint", White);
-				OLED_UpdateScreen();
-				break;
-			case '4':
-				OLED_SetCursor(2,30);
-				OLED_WriteString("Delete fingerprint", White);
-				OLED_UpdateScreen();
-				break;
-		}
+		//Fingerprint detection
+		
 	}
+}
+
+void Display(char* msg)
+{
+	const uint8_t xPos = 2;
+	const uint8_t yPos = 10;
+	uint8_t y = yPos;
+	
+	OLED_ClearScreen();
+	OLED_SetCursor(xPos,y);
+	uint8_t i = 0;
+	while(msg[i] != '\0')
+	{
+		if(msg[i] == '\n')
+		{
+			y += 10; //+10 pixels for newline 
+			OLED_SetCursor(xPos,y);
+		}
+		OLED_WriteChar(msg[i],White);
+		i++;
+	}
+	OLED_UpdateScreen();
+}
+
+void GetKeypadData(char* keyBuffer)
+{
+  uint8_t i = 0;
+  while(1)
+  {
+    char key = Keypad_GetChar();
+    switch(key)
+    {
+      case '\0':
+        break;
+      case '#':
+        keyBuffer[i] = '\0';
+        return;
+      default:
+        if(i < BUFFER_SIZE)
+        {
+          keyBuffer[i] = key;
+          i++;
+        }
+        break;
+    }
+  }  
+}
+
+void StorePassword(char* password)
+{
+	EEPROM_StoreData((uint8_t*)password,BUFFER_SIZE,0);
+}
+
+void GetPassword(char* pswdBuffer)
+{
+	EEPROM_GetData((uint8_t*)pswdBuffer,BUFFER_SIZE,0);
+}
+
+pw_s RetryPassword(char* keyBuffer,char* password)
+{
+	char errorMsg[18] = "Incorrect\nRetry:";
+	char nTries;
+  pw_s passwordState = PASSWORD_INCORRECT;
+  uint8_t retry = 1;
+	
+  while(retry <= 2)
+  {
+		nTries = retry + '0'; //adding '0' converts int to char
+		errorMsg[16] = nTries; //number of attempts
+		Display(errorMsg);
+    GetKeypadData(keyBuffer);
+    retry++;
+    if(strcmp(keyBuffer,password) == 0)
+    {
+      passwordState = PASSWORD_CORRECT;
+      break;
+    }
+  }
+  return passwordState;   	
+}
+
+void InputNewPassword(void)
+{
+  char pswd[BUFFER_SIZE] = {0};
+  char newPassword[BUFFER_SIZE] = {0};
+  GetKeypadData(pswd);
+  strcpy(newPassword,pswd);
+  Display("Reenter new password");
+  GetKeypadData(pswd);
+  if(strcmp(pswd,newPassword) == 0)
+  {
+    Display("New password created");
+    StorePassword(pswd);
+  }
+  else
+  {
+    pw_s pswdState = RetryPassword(pswd,newPassword);
+    switch(pswdState)
+    {
+      case PASSWORD_CORRECT:
+        Display("New password created");
+        StorePassword(pswd);
+        break;
+      case PASSWORD_INCORRECT:
+        Display("Could not create");
+        break;
+    } 
+  } 	
+}
+
+void InputPhoneNumber(void)
+{
+ 	
+}
+
+void IntruderAlert(char* msg)
+{
+	
+}
+
+void CheckKey(char key)
+{
+  if(key == '*')
+  {
+    Display("Correct");
+		OutputDev_Write(LOCK,true);
+  }
+  else if(key == 'A')
+  {
+    Display("Correct. Press:\n"
+            "0.New password\n"
+            "1.Phone number\n"
+            "2.Store fingerprint\n"
+            "3.Delete fingerprints\n");
+    char getKey = '\0';
+    while(getKey != 'B')
+    {
+      getKey = Keypad_GetChar();
+      if(getKey == '0')
+      {
+        Display("Enter new password");
+        InputNewPassword();
+        break;
+      }
+      else if(getKey == '1')
+      {
+        Display("Enter phone number");
+        InputPhoneNumber();
+        break;
+      }
+      else if(getKey == '2')
+      {
+        Display("Place finger"); 
+        StoreFingerprint();
+        break;
+      }
+      else if(getKey == '3')
+      {
+        Fingerprint_EmptyDatabase();
+        Display("Database cleared");
+        System_DelayMs(1000);
+        OLED_ClearScreen();
+        OLED_UpdateScreen();
+        break;
+      }
+    }
+  }
+}
+
+void HMI(char key)
+{
+  char pswd[BUFFER_SIZE] = {0};
+  char eepromPswd[BUFFER_SIZE] = {0};
+  GetPassword(eepromPswd);
+  Display("Enter password");
+  GetKeypadData(pswd);
+  if(strcmp(pswd,eepromPswd) == 0)
+  {
+    CheckKey(key);
+  }
+  else
+  {
+    pw_s pswdState = RetryPassword(pswd,eepromPswd);
+    switch(pswdState)
+    {
+      case PASSWORD_CORRECT:
+        CheckKey(key);
+        break;
+      case PASSWORD_INCORRECT:
+        Display("Incorrect");
+        SetState(FAILED_INPUT,true);
+        IntruderAlert("Intruder: Wrong inputs from Keypad!!!!!");
+        break;
+    }    
+  }
+  System_DelayMs(1000);
+  OLED_ClearScreen();
+  OLED_UpdateScreen();	
+}
+
+void StoreFingerprint(void)
+{
+  uint8_t id = 0;
+  //Searching for free slot to store the fingerprint template
+  for(uint8_t i = 1; i <= 127; i++)
+  {
+    if(Fingerprint_LoadModel(i) != FINGERPRINT_OK)
+    {
+      id = i;
+      break;
+    }
+  }
+  if(id == 0)
+  {
+    Display("Memory full");
+    System_DelayMs(1000);
+    OLED_ClearScreen();
+    OLED_UpdateScreen();
+    return; //Exit 
+  }
+  while(Fingerprint_GetImage() != FINGERPRINT_OK){}
+  while(Fingerprint_Image2Tz(1) != FINGERPRINT_OK){}
+  Display("Remove finger then\nplace same finger\nagain");
+  while(Fingerprint_GetImage() != FINGERPRINT_OK){}
+  while(Fingerprint_Image2Tz(2) != FINGERPRINT_OK){} 
+  //Creating model for fingerprint
+  if(Fingerprint_CreateModel() == FINGERPRINT_OK) 
+  {
+    if(Fingerprint_StoreModel(id) == FINGERPRINT_OK) 
+    {
+      Display("Fingerprint stored!");
+    } 
+  } 
+  else
+  {
+    Display("Prints unmatched!");
+  }
+  System_DelayMs(1000);
+  OLED_ClearScreen();
+  OLED_UpdateScreen();	
+}
+
+uint8_t FindFingerprint(void)
+{
+  uint8_t f_status = Fingerprint_GetImage();
+  if(f_status != FINGERPRINT_OK)
+  {
+    return f_status;
+  }
+  f_status = Fingerprint_Image2Tz(1);
+  if(f_status != FINGERPRINT_OK) 
+  { 
+    return f_status;
+  }
+  f_status = Fingerprint_FingerFastSearch();
+  if(f_status != FINGERPRINT_OK)  
+  {
+    return f_status;
+  }
+  return f_status;	
 }
