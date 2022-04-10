@@ -14,6 +14,7 @@
 ".\objects\oled.o"
 ".\objects\bluetooth.o"
 ".\objects\output_device.o"
+".\objects\ir_sensor.o"
 ".\objects\clock.o"
 ".\objects\gpio.o"
 ".\objects\uart.o"

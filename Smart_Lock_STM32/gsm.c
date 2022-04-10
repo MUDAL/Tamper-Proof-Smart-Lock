@@ -19,13 +19,14 @@ void GSM_Init(void)
 void GSM_SendText(char* phoneNo,char* msg)
 {
 	char atCmgsCmd[27] = "AT+CMGS=\"";
-	USART_WriteChars(USART2,"AT+CMGF=1");
+	USART_WriteChars(USART2,"AT+CMGF=1\r\n");
 	SysTick_DelayMs(500);
 	strcat(atCmgsCmd,phoneNo);
 	strcat(atCmgsCmd,"\"\r\n");
 	USART_WriteChars(USART2,atCmgsCmd);
 	SysTick_DelayMs(500);
 	USART_WriteChars(USART2,msg);
+	USART_WriteChars(USART2,"\r\n");
 	SysTick_DelayMs(500);
 	USART_WriteByte(USART2,26); //command termination
 	SysTick_DelayMs(500);

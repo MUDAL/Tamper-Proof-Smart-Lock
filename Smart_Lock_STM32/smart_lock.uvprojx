@@ -543,6 +543,16 @@
               <FileType>5</FileType>
               <FilePath>.\output_device.h</FilePath>
             </File>
+            <File>
+              <FileName>ir_sensor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\ir_sensor.c</FilePath>
+            </File>
+            <File>
+              <FileName>ir_sensor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\ir_sensor.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

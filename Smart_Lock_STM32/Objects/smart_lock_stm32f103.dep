@@ -1,6 +1,6 @@
 Dependencies for Project 'smart_lock', Target 'stm32f103': (DO NOT MODIFY !)
 CompilerVersion: 5060960::V5.06 update 7 (build 960)::.\ARMCC
-F (.\main.c)(0x6252CAFD)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections-I.\RTE\Device\STM32F103C8-I.\RTE\_stm32f103-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_MD -D_RTE_-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+F (.\main.c)(0x62531423)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections-I.\RTE\Device\STM32F103C8-I.\RTE\_stm32f103-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_MD -D_RTE_-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
 I (C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include\stm32f10x.h)(0x61ADDBCE)
 I (.\RTE\_stm32f103\RTE_Components.h)(0x62483724)
 I (C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include\core_cm3.h)(0x60D44B52)
@@ -21,6 +21,8 @@ I (fingerprint.h)(0x624C1337)
 I (eeprom.h)(0x6249EF14)
 I (state.h)(0x6251EF77)
 I (gsm.h)(0x624869F3)
+I (rtc.h)(0x62484A3C)
+I (ir_sensor.h)(0x6252DCAF)
 I (diskio.h)(0x5FF05EA1)
 I (integer.h)(0x5FF05EA2)
 I (sd_card.h)(0x62492953)
@@ -157,7 +159,7 @@ I (gpio.h)(0x62497CF8)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x602585EC)
 I (button.h)(0x62496F4D)
 F (.\button.h)(0x62496F4D)()
-F (.\gsm.c)(0x624869F3)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections-I.\RTE\Device\STM32F103C8-I.\RTE\_stm32f103-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_MD -D_RTE_-o .\objects\gsm.o --omf_browse .\objects\gsm.crf --depend .\objects\gsm.d)
+F (.\gsm.c)(0x62531322)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections-I.\RTE\Device\STM32F103C8-I.\RTE\_stm32f103-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_MD -D_RTE_-o .\objects\gsm.o --omf_browse .\objects\gsm.crf --depend .\objects\gsm.d)
 I (C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include\stm32f10x.h)(0x61ADDBCE)
 I (.\RTE\_stm32f103\RTE_Components.h)(0x62483724)
 I (C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include\core_cm3.h)(0x60D44B52)
@@ -215,6 +217,9 @@ I (gpio.h)(0x62497CF8)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x602585EC)
 I (output_device.h)(0x62497B55)
 F (.\output_device.h)(0x62497B55)()
+F (.\ir_sensor.c)(0x6252DCAF)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections-I.\RTE\Device\STM32F103C8-I.\RTE\_stm32f103-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_MD -D_RTE_-o .\objects\ir_sensor.o --omf_browse .\objects\ir_sensor.crf --depend .\objects\ir_sensor.d)
+I (ir_sensor.h)(0x6252DCAF)
+F (.\ir_sensor.h)(0x6252DCAF)()
 F (.\clock.c)(0x624849A6)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections-I.\RTE\Device\STM32F103C8-I.\RTE\_stm32f103-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_MD -D_RTE_-o .\objects\clock.o --omf_browse .\objects\clock.crf --depend .\objects\clock.d)
 I (C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include\stm32f10x.h)(0x61ADDBCE)
 I (.\RTE\_stm32f103\RTE_Components.h)(0x62483724)

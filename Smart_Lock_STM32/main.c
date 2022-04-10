@@ -11,14 +11,16 @@
 #include "eeprom.h"
 #include "state.h"
 #include "gsm.h"
+#include "rtc.h"
+#include "ir_sensor.h"
 //SD card
 #include "diskio.h"
 #include "sd_card.h"
 #include "ff.h"
 
 #define BUFFER_SIZE  		  20 //Max buffer size 
-#define PSWD_EEPROMPAGE	  0
-#define PHONE_EEPROMPAGE	5
+#define PSWD_EEPROMPAGE	   0
+#define PHONE_EEPROMPAGE	 5
 
 //Password states
 typedef enum 
@@ -45,16 +47,19 @@ int main(void)
 	//static char sdBuffer[BUFFER_SIZE];
 	//static FATFS fs; //file system
 	//static FIL fil; //file
+	uint8_t invalidPrints = 0;
 	
 	System_Config();
 	Keypad_Init();
-	OLED_Init();
-	OLED_ClearScreen();
 	BT_Init();
 	BT_RxBufferInit(btRxBuffer,BUFFER_SIZE);
 	Button_Init();
 	OutputDev_Init();
 	SD_Init();
+	GSM_Init();
+	Fingerprint_Init();
+	OLED_Init();
+	OLED_ClearScreen();
 	
 	//SD
 	/*Mount SD card*/
@@ -80,7 +85,43 @@ int main(void)
 			}
 		}
 		//Fingerprint detection
-		
+		if(!GetState(INVALID_FINGERPRINT))
+		{
+			uint8_t f_status = FindFingerprint();
+			switch(f_status)
+			{
+				case FINGERPRINT_OK:
+					invalidPrints = 0;
+					OLED_ClearScreen();
+					OLED_UpdateScreen();
+					OutputDev_Write(LOCK,true);
+					break;
+				case FINGERPRINT_NOTFOUND:
+					if(invalidPrints < 2)
+					{
+						char msg[8] = "Retry:";
+						msg[6] = '0' + invalidPrints + 1; //adding '0' converts int to char
+						Display(msg); 
+					}
+					else
+					{
+						SetState(INVALID_FINGERPRINT,true);
+						Display("Invalid\nfingerprint");
+						IntruderAlert("Unregistered fingerprints detected");
+						OLED_ClearScreen();
+						OLED_UpdateScreen();
+						invalidPrints = 0;        
+					}
+					invalidPrints++;
+					break;
+			}    
+		}		
+		//Tamper detection
+		if(GetState(LOCK_TAMPERED))
+		{
+			IntruderAlert("Tamper detected!!!!!");
+			SetState(LOCK_TAMPERED,false);
+		}
 	}
 }
 

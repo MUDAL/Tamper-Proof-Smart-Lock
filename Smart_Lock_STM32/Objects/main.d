@@ -19,6 +19,8 @@
 .\objects\main.o: eeprom.h
 .\objects\main.o: state.h
 .\objects\main.o: gsm.h
+.\objects\main.o: rtc.h
+.\objects\main.o: ir_sensor.h
 .\objects\main.o: diskio.h
 .\objects\main.o: integer.h
 .\objects\main.o: sd_card.h
