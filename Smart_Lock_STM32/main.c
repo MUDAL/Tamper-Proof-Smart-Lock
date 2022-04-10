@@ -10,12 +10,15 @@
 #include "fingerprint.h"
 #include "eeprom.h"
 #include "state.h"
+#include "gsm.h"
 //SD card
 #include "diskio.h"
 #include "sd_card.h"
 #include "ff.h"
 
-#define BUFFER_SIZE  20 //Max buffer size 
+#define BUFFER_SIZE  		  20 //Max buffer size 
+#define PSWD_EEPROMPAGE	  0
+#define PHONE_EEPROMPAGE	5
 
 //Password states
 typedef enum 
@@ -27,8 +30,6 @@ typedef enum
 //Functions
 void Display(char* msg);
 void GetKeypadData(char* keyBuffer);
-void StorePassword(char* password);
-void GetPassword(char* pswdBuffer);
 pw_s RetryPassword(char* keyBuffer,char* password);
 void InputNewPassword(void);
 void InputPhoneNumber(void);
@@ -129,16 +130,6 @@ void GetKeypadData(char* keyBuffer)
   }  
 }
 
-void StorePassword(char* password)
-{
-	EEPROM_StoreData((uint8_t*)password,BUFFER_SIZE,0);
-}
-
-void GetPassword(char* pswdBuffer)
-{
-	EEPROM_GetData((uint8_t*)pswdBuffer,BUFFER_SIZE,0);
-}
-
 pw_s RetryPassword(char* keyBuffer,char* password)
 {
 	char errorMsg[18] = "Incorrect\nRetry:";
@@ -168,12 +159,12 @@ void InputNewPassword(void)
   char newPassword[BUFFER_SIZE] = {0};
   GetKeypadData(pswd);
   strcpy(newPassword,pswd);
-  Display("Reenter new password");
+  Display("Reenter new\npassword");
   GetKeypadData(pswd);
   if(strcmp(pswd,newPassword) == 0)
   {
-    Display("New password created");
-    StorePassword(pswd);
+    Display("New password\ncreated");
+    EEPROM_StoreData((uint8_t*)pswd,BUFFER_SIZE,PSWD_EEPROMPAGE);
   }
   else
   {
@@ -181,8 +172,8 @@ void InputNewPassword(void)
     switch(pswdState)
     {
       case PASSWORD_CORRECT:
-        Display("New password created");
-        StorePassword(pswd);
+        Display("New password\ncreated");
+        EEPROM_StoreData((uint8_t*)pswd,BUFFER_SIZE,PSWD_EEPROMPAGE);
         break;
       case PASSWORD_INCORRECT:
         Display("Could not create");
@@ -193,12 +184,26 @@ void InputNewPassword(void)
 
 void InputPhoneNumber(void)
 {
- 	
+	const char countryCode[] = "+234";
+ 	char phoneNumber[15] = {0};
+	char displayMsg[30] = "Phone number:\n";
+	GetKeypadData(phoneNumber+3);
+	//Insert country code
+	for(uint8_t i = 0; i < 4; i++)
+	{
+		phoneNumber[i] = countryCode[i];
+	}
+	strcat(displayMsg,phoneNumber);
+	Display(displayMsg);
+	EEPROM_StoreData((uint8_t*)phoneNumber,BUFFER_SIZE,PHONE_EEPROMPAGE);
 }
 
 void IntruderAlert(char* msg)
 {
-	
+	char phoneNumber[15] = {0};
+	OutputDev_Write(BUZZER,true);
+	EEPROM_GetData((uint8_t*)phoneNumber,BUFFER_SIZE,PHONE_EEPROMPAGE);
+	GSM_SendText(phoneNumber,msg);
 }
 
 void CheckKey(char key)
@@ -213,8 +218,8 @@ void CheckKey(char key)
     Display("Correct. Press:\n"
             "0.New password\n"
             "1.Phone number\n"
-            "2.Store fingerprint\n"
-            "3.Delete fingerprints\n");
+            "2.Store print\n"
+            "3.Delete prints\n");
     char getKey = '\0';
     while(getKey != 'B')
     {
@@ -254,7 +259,7 @@ void HMI(char key)
 {
   char pswd[BUFFER_SIZE] = {0};
   char eepromPswd[BUFFER_SIZE] = {0};
-  GetPassword(eepromPswd);
+  EEPROM_GetData((uint8_t*)eepromPswd,BUFFER_SIZE,PSWD_EEPROMPAGE);
   Display("Enter password");
   GetKeypadData(pswd);
   if(strcmp(pswd,eepromPswd) == 0)
@@ -311,12 +316,12 @@ void StoreFingerprint(void)
   {
     if(Fingerprint_StoreModel(id) == FINGERPRINT_OK) 
     {
-      Display("Fingerprint stored!");
+      Display("Fingerprint\nstored!");
     } 
   } 
   else
   {
-    Display("Prints unmatched!");
+    Display("Fingerprints\nunmatched!");
   }
   System_DelayMs(1000);
   OLED_ClearScreen();
