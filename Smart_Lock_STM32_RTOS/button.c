@@ -42,12 +42,12 @@ void Button_Init(void)
 
 bool Button_IsPressed(button_t button)
 {
-	if(!ButtonDebounced(button) && !buttonPrevPressed[button])
+	if(ButtonDebounced(button) && !buttonPrevPressed[button])
 	{
 		buttonPrevPressed[button] = true;
 		return true;
 	}
-	else if(ButtonDebounced(button) && buttonPrevPressed[button])
+	else if(!ButtonDebounced(button) && buttonPrevPressed[button])
 	{
 		buttonPrevPressed[button] = false;
 	}
