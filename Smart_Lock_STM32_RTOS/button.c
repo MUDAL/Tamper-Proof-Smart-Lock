@@ -1,8 +1,33 @@
 #include "stm32f10x.h"                  // Device header
 #include "gpio.h"
+#include <FreeRTOS.h>
+#include <task.h>
 #include "button.h"
 
 static bool buttonPrevPressed[2];
+
+static bool ButtonDebounced(button_t button)
+{
+	uint16_t gpioPin;
+	switch(button)
+	{
+		case INDOOR:
+			gpioPin = GPIO_PIN0;
+			break;
+		case OUTDOOR:
+			gpioPin = GPIO_PIN1;
+			break;
+	}
+	if(!GPIO_InputRead(GPIOA,gpioPin))
+	{
+		vTaskDelay(pdMS_TO_TICKS(15)); //De-bounce
+		if(!GPIO_InputRead(GPIOA,gpioPin))
+		{
+			return true;
+		}
+	}
+	return false;
+}
 
 void Button_Init(void)
 {
@@ -15,24 +40,14 @@ void Button_Init(void)
 								 GPIO_PULLUP_ENABLE);	
 }
 
-bool Button_IsPressedOnce(button_t button)
+bool Button_IsPressed(button_t button)
 {
-	uint16_t gpioPin;
-	switch(button)
-	{
-		case INDOOR:
-			gpioPin = GPIO_PIN0;
-			break;
-		case OUTDOOR:
-			gpioPin = GPIO_PIN1;
-			break;
-	}
-	if(!GPIO_InputRead(GPIOA,gpioPin) && !buttonPrevPressed[button])
+	if(!ButtonDebounced(button) && !buttonPrevPressed[button])
 	{
 		buttonPrevPressed[button] = true;
 		return true;
 	}
-	else if(GPIO_InputRead(GPIOA,gpioPin) && buttonPrevPressed[button])
+	else if(ButtonDebounced(button) && buttonPrevPressed[button])
 	{
 		buttonPrevPressed[button] = false;
 	}

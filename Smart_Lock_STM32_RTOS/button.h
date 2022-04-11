@@ -8,6 +8,6 @@ typedef enum
 }button_t;
 
 extern void Button_Init(void);
-extern bool Button_IsPressedOnce(button_t button);
+extern bool Button_IsPressed(button_t button);
 
 #endif //BUTTON_H
