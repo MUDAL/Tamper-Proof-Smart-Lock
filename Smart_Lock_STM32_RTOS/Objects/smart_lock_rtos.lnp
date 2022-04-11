@@ -23,7 +23,6 @@
 ".\objects\i2c.o"
 ".\objects\spi.o"
 ".\objects\uart.o"
-".\objects\state.o"
 ".\objects\startup_stm32f10x_md.o"
 ".\objects\system_stm32f10x.o"
 --strict --scatter ".\Objects\smart_lock_rtos.sct"

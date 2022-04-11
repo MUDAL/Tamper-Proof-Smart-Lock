@@ -14,7 +14,6 @@
 #include "output_device.h"
 #include "fingerprint.h"
 #include "eeprom.h"
-#include "state.h"
 #include "gsm.h"
 #include "rtc.h"
 #include "ir_sensor.h"
@@ -37,7 +36,6 @@ extern void InputNewPassword(void);
 extern void InputPhoneNumber(void);
 extern void IntruderAlert(char* msg);
 extern void CheckKey(char key);
-extern void HMI(char key);
 extern void StoreFingerprint(void);
 uint8_t FindFingerprint(void);
 

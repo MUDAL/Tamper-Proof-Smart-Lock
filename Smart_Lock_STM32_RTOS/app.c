@@ -171,37 +171,6 @@ void CheckKey(char key)
   }
 }
 
-void HMI(char key)
-{
-  char pswd[BUFFER_SIZE] = {0};
-  char eepromPswd[BUFFER_SIZE] = {0};
-  EEPROM_GetData((uint8_t*)eepromPswd,BUFFER_SIZE,PSWD_EEPROMPAGE);
-  Display("Enter password");
-  GetKeypadData(pswd);
-  if(strcmp(pswd,eepromPswd) == 0)
-  {
-    CheckKey(key);
-  }
-  else
-  {
-    pw_s pswdState = RetryPassword(pswd,eepromPswd);
-    switch(pswdState)
-    {
-      case PASSWORD_CORRECT:
-        CheckKey(key);
-        break;
-      case PASSWORD_INCORRECT:
-        Display("Incorrect");
-        SetState(FAILED_INPUT,true);
-        IntruderAlert("Intruder: Wrong inputs from Keypad!!!!!");
-        break;
-    }    
-  }
-  vTaskDelay(pdMS_TO_TICKS(1000));
-  OLED_ClearScreen();
-  OLED_UpdateScreen();	
-}
-
 void StoreFingerprint(void)
 {
   uint8_t id = 0;

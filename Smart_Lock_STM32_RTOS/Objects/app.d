@@ -28,7 +28,6 @@
 .\objects\app.o: output_device.h
 .\objects\app.o: fingerprint.h
 .\objects\app.o: eeprom.h
-.\objects\app.o: state.h
 .\objects\app.o: gsm.h
 .\objects\app.o: rtc.h
 .\objects\app.o: ir_sensor.h
