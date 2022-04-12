@@ -4,29 +4,6 @@
 #include <task.h>
 #include "button.h"
 
-static bool ButtonDebounced(button_t button)
-{
-	uint16_t gpioPin;
-	switch(button)
-	{
-		case INDOOR:
-			gpioPin = GPIO_PIN0;
-			break;
-		case OUTDOOR:
-			gpioPin = GPIO_PIN1;
-			break;
-	}
-	if(!GPIO_InputRead(GPIOA,gpioPin))
-	{
-		vTaskDelay(pdMS_TO_TICKS(15)); //De-bounce
-		if(!GPIO_InputRead(GPIOA,gpioPin))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 void Button_Init(void)
 {
 	//INDOOR button(PA0) and Outdoor button (PA1) Init
@@ -40,12 +17,22 @@ void Button_Init(void)
 
 bool Button_IsPressed(button_t button,bool* pPrevPressed)
 {
-	if(ButtonDebounced(button) && !(*pPrevPressed))
+	uint16_t gpioPin;
+	switch(button)
+	{
+		case INDOOR:
+			gpioPin = GPIO_PIN0;
+			break;
+		case OUTDOOR:
+			gpioPin = GPIO_PIN1;
+			break;
+	}
+	if(!GPIO_InputRead(GPIOA,gpioPin) && !(*pPrevPressed))
 	{
 		*pPrevPressed = true;
 		return true;
 	}
-	else if(!ButtonDebounced(button) && *pPrevPressed)
+	else if(GPIO_InputRead(GPIOA,gpioPin) && *pPrevPressed)
 	{
 		*pPrevPressed = false;
 	}

@@ -80,8 +80,8 @@ void InputNewPassword(void)
   GetKeypadData(pswd);
   if(strcmp(pswd,newPassword) == 0)
   {
+		EEPROM_StoreData((uint8_t*)pswd,BUFFER_SIZE,PSWD_EEPROMPAGE);
     Display("New password\ncreated");
-    EEPROM_StoreData((uint8_t*)pswd,BUFFER_SIZE,PSWD_EEPROMPAGE);
   }
   else
   {
@@ -89,8 +89,8 @@ void InputNewPassword(void)
     switch(pswdState)
     {
       case PASSWORD_CORRECT:
-        Display("New password\ncreated");
         EEPROM_StoreData((uint8_t*)pswd,BUFFER_SIZE,PSWD_EEPROMPAGE);
+				Display("New password\ncreated");
         break;
       case PASSWORD_INCORRECT:
         Display("Could not create");
@@ -111,8 +111,8 @@ void InputPhoneNumber(void)
 		phoneNumber[i] = countryCode[i];
 	}
 	strcat(displayMsg,phoneNumber);
-	Display(displayMsg);
 	EEPROM_StoreData((uint8_t*)phoneNumber,BUFFER_SIZE,PHONE_EEPROMPAGE);
+	Display(displayMsg);
 }
 
 void IntruderAlert(char* msg)
@@ -164,9 +164,6 @@ void CheckKey(char key)
       {
         Fingerprint_EmptyDatabase();
         Display("Database cleared");
-        vTaskDelay(pdMS_TO_TICKS(1000));
-        OLED_ClearScreen();
-        OLED_UpdateScreen();
         break;
       }
     }
@@ -190,7 +187,6 @@ void StoreFingerprint(void)
     Display("Memory full");
     vTaskDelay(pdMS_TO_TICKS(1000));
     OLED_ClearScreen();
-    OLED_UpdateScreen();
     return; //Exit 
   }
   while(Fingerprint_GetImage() != FINGERPRINT_OK){}
@@ -210,9 +206,6 @@ void StoreFingerprint(void)
   {
     Display("Fingerprints\nunmatched!");
   }
-  vTaskDelay(pdMS_TO_TICKS(1000));
-  OLED_ClearScreen();
-  OLED_UpdateScreen();	
 }
 
 uint8_t FindFingerprint(void)

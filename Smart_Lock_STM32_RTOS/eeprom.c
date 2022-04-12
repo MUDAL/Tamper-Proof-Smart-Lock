@@ -21,7 +21,7 @@ static void EEPROM_WritePage(uint8_t pageAddr, uint8_t* pData, uint8_t len)
 	//I2C communication involving EEPROM slave and word address
 	I2C_WriteMultiByte(I2C1,deviceAddr ,wordAddr, pData, len);
 	//write cycle time
-	vTaskDelay(pdMS_TO_TICKS(5));
+	vTaskDelay(pdMS_TO_TICKS(10));
 }
 
 static void EEPROM_ReadPage(uint8_t pageAddr, uint8_t* pReceiveBuffer, uint8_t len)

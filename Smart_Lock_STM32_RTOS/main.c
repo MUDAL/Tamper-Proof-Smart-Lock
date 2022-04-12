@@ -4,7 +4,7 @@
 void Task1(void* pvParameters);
 void Task2(void* pvParameters);
 void Task3(void* pvParameters);
-//void Task4(void* pvParameters);
+void Task4(void* pvParameters);
 
 int main(void)
 {
@@ -29,7 +29,7 @@ void Task1(void* pvParameters)
 	Fingerprint_Init();
 	xTaskCreate(Task2,"",300,NULL,1,NULL); //HMI and Fingerprint
 	xTaskCreate(Task3,"",100,NULL,1,NULL); //Buttons, IR sensor, tamper detection
-	//xTaskCreate(Task4,"",300,NULL,1,NULL); //Bluetooth
+	xTaskCreate(Task4,"",300,NULL,1,NULL); //Bluetooth
 	vTaskDelete(NULL);
 	while(1)
 	{
@@ -100,10 +100,10 @@ void Task2(void* pvParameters)
 					else
 					{
 						invalidFingerprint = true;
-						Display("Invalid\nfingerprint");
-						OLED_ClearScreen();
-						numOfInvalidPrints = 0; 
+						Display("Invalid\nfingerprint"); 
 						IntruderAlert("Unregistered fingerprints detected");
+						OLED_ClearScreen();
+						numOfInvalidPrints = 0;
 					}
 					numOfInvalidPrints++;
 					break;
@@ -118,6 +118,7 @@ void Task3(void* pvParameters)
 	bool outdoorPrevState = false;
 	while(1)
 	{
+		vTaskDelay(pdMS_TO_TICKS(10));
 		if(Button_IsPressed(INDOOR,&indoorPrevState))
 		{
 			//Open door if closed, close if open
@@ -131,12 +132,13 @@ void Task3(void* pvParameters)
 	}
 }
 
-/*void Task4(void* pvParameters)
+void Task4(void* pvParameters)
 {
 	uint8_t btRxBuffer[BUFFER_SIZE] = {0};
 	BT_RxBufferInit(btRxBuffer,BUFFER_SIZE);
 	while(1)
 	{
+		vTaskDelay(pdMS_TO_TICKS(200));
 		char eepromPswd[BUFFER_SIZE] = {0};
 		EEPROM_GetData((uint8_t*)eepromPswd,BUFFER_SIZE,PSWD_EEPROMPAGE);
 		btStatus_t bluetoothStatus = BT_Receive();
@@ -187,4 +189,4 @@ void Task3(void* pvParameters)
 		}
 	}
 }
-*/
+
