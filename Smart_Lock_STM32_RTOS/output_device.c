@@ -32,3 +32,18 @@ void OutputDev_Write(outputDev_t dev,bool state)
 	}
 	GPIO_OutputWrite(GPIOA,gpioPin,state);
 }
+
+bool OutputDev_Read(outputDev_t dev)
+{
+	uint16_t gpioPin;
+	switch(dev)
+	{
+		case LOCK:
+			gpioPin = GPIO_PIN3;
+			break;
+		case BUZZER:
+			gpioPin = GPIO_PIN8;
+			break;
+	}
+	return GPIO_OutputRead(GPIOA,gpioPin);
+}

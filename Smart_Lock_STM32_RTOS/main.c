@@ -4,11 +4,12 @@
 void Task1(void* pvParameters);
 void Task2(void* pvParameters);
 void Task3(void* pvParameters);
-void Task4(void* pvParameters);
+//void Task4(void* pvParameters);
 
 int main(void)
 {
-	xTaskCreate(Task1,"Init",128,NULL,1,NULL);
+	System_Config();
+	xTaskCreate(Task1,"",100,NULL,1,NULL); //Initializations
 	vTaskStartScheduler();
 	while(1)
 	{
@@ -18,18 +19,17 @@ int main(void)
 //Tasks
 void Task1(void* pvParameters)
 {
-	System_Config();
 	Keypad_Init();
 	Button_Init();
 	BT_Init();
 	OutputDev_Init();
 	GSM_Init();
-	Fingerprint_Init();
 	OLED_Init();
 	OLED_ClearScreen();	
-	xTaskCreate(Task2,"Bluetooth",256,NULL,1,NULL);
-	xTaskCreate(Task3,"Main",256,NULL,1,NULL);
-	xTaskCreate(Task4,"Buttons and IR sensor",256,NULL,1,NULL);
+	Fingerprint_Init();
+	xTaskCreate(Task2,"",300,NULL,1,NULL); //HMI and Fingerprint
+	xTaskCreate(Task3,"",100,NULL,1,NULL); //Buttons, IR sensor, tamper detection
+	//xTaskCreate(Task4,"",300,NULL,1,NULL); //Bluetooth
 	vTaskDelete(NULL);
 	while(1)
 	{
@@ -38,24 +38,16 @@ void Task1(void* pvParameters)
 
 void Task2(void* pvParameters)
 {
-	static uint8_t btRxBuffer[BUFFER_SIZE];
-	BT_RxBufferInit(btRxBuffer,BUFFER_SIZE);
-	while(1)
-	{
-	}
-}
-
-void Task3(void* pvParameters)
-{
 	bool invalidInput = false;
 	bool invalidFingerprint = false;
+	bool prevPressed[4][4] = {0};
 	uint8_t numOfInvalidPrints = 0;
 	while(1)
 	{
 		//HMI (Keypad + OLED)
 		if(!invalidInput)
 		{
-			char key = Keypad_GetChar();
+			char key = Keypad_GetChar(prevPressed);
 			if((key == '*') || (key == 'A'))
 			{
 				char pswd[BUFFER_SIZE] = {0};
@@ -84,7 +76,6 @@ void Task3(void* pvParameters)
 				}
 				vTaskDelay(pdMS_TO_TICKS(1000));
 				OLED_ClearScreen();
-				OLED_UpdateScreen();	
 			}
 		}
 		//Fingerprint detection
@@ -96,7 +87,6 @@ void Task3(void* pvParameters)
 				case FINGERPRINT_OK:
 					numOfInvalidPrints = 0;
 					OLED_ClearScreen();
-					OLED_UpdateScreen();
 					OutputDev_Write(LOCK,true);
 					break;
 				case FINGERPRINT_NOTFOUND:
@@ -111,10 +101,9 @@ void Task3(void* pvParameters)
 					{
 						invalidFingerprint = true;
 						Display("Invalid\nfingerprint");
-						IntruderAlert("Unregistered fingerprints detected");
 						OLED_ClearScreen();
-						OLED_UpdateScreen();
-						numOfInvalidPrints = 0;        
+						numOfInvalidPrints = 0; 
+						IntruderAlert("Unregistered fingerprints detected");
 					}
 					numOfInvalidPrints++;
 					break;
@@ -123,10 +112,79 @@ void Task3(void* pvParameters)
 	}
 }
 
-void Task4(void* pvParameters)
+void Task3(void* pvParameters)
 {
+	bool indoorPrevState = false;
+	bool outdoorPrevState = false;
 	while(1)
 	{
+		if(Button_IsPressed(INDOOR,&indoorPrevState))
+		{
+			//Open door if closed, close if open
+			bool lockState = OutputDev_Read(LOCK);
+			OutputDev_Write(LOCK,!lockState);
+		}
+		if(Button_IsPressed(OUTDOOR,&outdoorPrevState))
+		{
+			OutputDev_Write(LOCK,false); //close door
+		}
 	}
 }
 
+/*void Task4(void* pvParameters)
+{
+	uint8_t btRxBuffer[BUFFER_SIZE] = {0};
+	BT_RxBufferInit(btRxBuffer,BUFFER_SIZE);
+	while(1)
+	{
+		char eepromPswd[BUFFER_SIZE] = {0};
+		EEPROM_GetData((uint8_t*)eepromPswd,BUFFER_SIZE,PSWD_EEPROMPAGE);
+		btStatus_t bluetoothStatus = BT_Receive();
+		if(bluetoothStatus != NO_DATA)
+		{
+			if(strcmp((char*)btRxBuffer,eepromPswd) == 0)
+			{
+				BT_Transmit("\nSmart lock bluetooth codes:\n" 
+                    "0. To open the door\n"
+                    "1. To close the door\n"
+                    "2. To get security report\n"
+                    "3. To set the time\n");
+				//Reset buffer if IDLE line is detected
+				if(bluetoothStatus == IDLE_LINE)
+				{
+					BT_RxBufferInit(btRxBuffer,BUFFER_SIZE); 
+				}
+				//Awaiting bluetooth code
+				btStatus_t btStatus = NO_DATA;
+				while(1)
+				{
+					btStatus = BT_Receive();
+					if(btStatus != NO_DATA)
+					{
+						break;
+					}
+				}
+				//Check which code was received
+				switch(btRxBuffer[0])
+				{
+					case '0':
+						OutputDev_Write(LOCK,true);
+						break;
+					case '1':
+						OutputDev_Write(LOCK,false);
+						break;
+					case '2':
+						break;
+					case '3':
+						break;
+				}
+				//Reset buffer if IDLE line is detected
+				if(btStatus == IDLE_LINE)
+				{
+					BT_RxBufferInit(btRxBuffer,BUFFER_SIZE); 
+				}
+			}
+		}
+	}
+}
+*/

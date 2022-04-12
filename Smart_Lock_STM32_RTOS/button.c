@@ -4,8 +4,6 @@
 #include <task.h>
 #include "button.h"
 
-static bool buttonPrevPressed[2];
-
 static bool ButtonDebounced(button_t button)
 {
 	uint16_t gpioPin;
@@ -40,16 +38,16 @@ void Button_Init(void)
 								 GPIO_PULLUP_ENABLE);	
 }
 
-bool Button_IsPressed(button_t button)
+bool Button_IsPressed(button_t button,bool* pPrevPressed)
 {
-	if(ButtonDebounced(button) && !buttonPrevPressed[button])
+	if(ButtonDebounced(button) && !(*pPrevPressed))
 	{
-		buttonPrevPressed[button] = true;
+		*pPrevPressed = true;
 		return true;
 	}
-	else if(!ButtonDebounced(button) && buttonPrevPressed[button])
+	else if(!ButtonDebounced(button) && *pPrevPressed)
 	{
-		buttonPrevPressed[button] = false;
+		*pPrevPressed = false;
 	}
 	return false;
 }

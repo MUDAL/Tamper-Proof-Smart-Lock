@@ -2,8 +2,8 @@
 
 void Display(char* msg)
 {
-	const uint8_t xPos = 2;
-	const uint8_t yPos = 10;
+	uint8_t xPos = 2;
+	uint8_t yPos = 10;
 	uint8_t y = yPos;
 	
 	OLED_ClearScreen();
@@ -24,10 +24,11 @@ void Display(char* msg)
 
 void GetKeypadData(char* keyBuffer)
 {
+	bool prevPressed[4][4] = {0};
   uint8_t i = 0;
   while(1)
   {
-    char key = Keypad_GetChar();
+    char key = Keypad_GetChar(prevPressed);
     switch(key)
     {
       case '\0':
@@ -100,7 +101,7 @@ void InputNewPassword(void)
 
 void InputPhoneNumber(void)
 {
-	const char countryCode[] = "+234";
+	char countryCode[] = "+234";
  	char phoneNumber[15] = {0};
 	char displayMsg[30] = "Phone number:\n";
 	GetKeypadData(phoneNumber+3);
@@ -124,6 +125,7 @@ void IntruderAlert(char* msg)
 
 void CheckKey(char key)
 {
+	bool prevPressed[4][4] = {0};
   if(key == '*')
   {
     Display("Correct");
@@ -139,7 +141,7 @@ void CheckKey(char key)
     char getKey = '\0';
     while(getKey != 'B')
     {
-      getKey = Keypad_GetChar();
+      getKey = Keypad_GetChar(prevPressed);
       if(getKey == '0')
       {
         Display("Enter new password");

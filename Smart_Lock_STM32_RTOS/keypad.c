@@ -4,13 +4,6 @@
 #include <task.h>
 #include "keypad.h"
 
-const char keypadMatrix[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS] =
-{{'1','2','3','A'},
- {'4','5','6','B'},
- {'7','8','9','C'},
- {'*','0','#','D'}};
-static bool prevPressed[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
-
 static bool IsDebounced(uint8_t colIndex)
 {
 	uint16_t colPin;
@@ -92,12 +85,19 @@ void Keypad_Init(void)
 									GPIO_PULLUP_ENABLE);
 }
 
-char Keypad_GetChar(void)
+char Keypad_GetChar(bool prevPressed[4][4])
 {
-	for(uint8_t i = 0; i < NUMBER_OF_ROWS; i++)
+	char keypadMatrix[4][4] =
+	{{'1','2','3','A'},
+	 {'4','5','6','B'},
+	 {'7','8','9','C'},
+	 {'*','0','#','D'}
+	};
+
+	for(uint8_t i = 0; i < 4; i++)
 	{
 		SelectRow(i);
-		for(uint8_t j = 0; j < NUMBER_OF_COLUMNS; j++)
+		for(uint8_t j = 0; j < 4; j++)
 		{
 			if(IsDebounced(j) && !prevPressed[i][j])
 			{

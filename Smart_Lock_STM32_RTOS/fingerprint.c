@@ -7,7 +7,6 @@
 #include "fingerprint.h"
 #include <string.h>
 
-#define TIMEOUT_MS	500
 //Estimated size of packet to be received from the fingerprint sensor
 #define RXBUFFER_SIZE	50
 

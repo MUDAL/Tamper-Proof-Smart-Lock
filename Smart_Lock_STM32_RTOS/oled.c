@@ -129,7 +129,7 @@ static void OLED_Fill(OLED_COLOR color)
 {
 	for(uint32_t i = 0; i < sizeof(screenBuffer); i++) 
 	{
-			screenBuffer[i] = (color == Black) ? 0x00 : 0xFF;
+		screenBuffer[i] = (color == Black) ? 0x00 : 0xFF;
 	}
 }
 
@@ -167,9 +167,6 @@ void OLED_Init(void)
 	OLED_WriteCommand(0xAF);   // Turn on OLED panel
 	OLED_Fill(Black); // Clear screen
 	OLED_UpdateScreen(); // Flush buffer to screen
-	// Set default values for screen object
-	xPos = 0;
-	yPos = 0;
 }
 
 // Write the screenbuffer with changed to the screen
@@ -265,4 +262,5 @@ void OLED_SetCursor(uint8_t x, uint8_t y)
 void OLED_ClearScreen(void)
 {
 	memset(screenBuffer,0,OLED_BUFFER_SIZE);
+	OLED_UpdateScreen();
 }
