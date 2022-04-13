@@ -5,6 +5,7 @@ void Task1(void* pvParameters);
 void Task2(void* pvParameters);
 void Task3(void* pvParameters);
 void Task4(void* pvParameters);
+void Task5(void* pvParameters);
 
 int main(void)
 {
@@ -31,6 +32,7 @@ void Task1(void* pvParameters)
 	xTaskCreate(Task2,"",300,NULL,1,NULL); //HMI and Fingerprint
 	xTaskCreate(Task3,"",100,NULL,1,NULL); //Buttons, IR sensor, tamper detection
 	xTaskCreate(Task4,"",300,NULL,1,NULL); //Bluetooth
+	xTaskCreate(Task5,"",100,NULL,1,NULL); //Timeouts
 	vTaskDelete(NULL);
 	while(1)
 	{
@@ -184,3 +186,14 @@ void Task4(void* pvParameters)
 	}
 }
 
+void Task5(void* pvParameters)
+{
+	uint8_t tLock = 0;
+	uint8_t tBuzzer = 0;
+	while(1)
+	{
+		vTaskDelay(pdMS_TO_TICKS(1000));
+		OutputDev_Timeout(LOCK,&tLock,TIMEOUT_LOCK);
+		OutputDev_Timeout(BUZZER,&tBuzzer,TIMEOUT_BUZZER);
+	}
+}
