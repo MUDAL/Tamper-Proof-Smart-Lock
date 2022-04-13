@@ -21,6 +21,7 @@ void Task1(void* pvParameters)
 {
 	Keypad_Init();
 	Button_Init();
+	IRSensor_Init();
 	BT_Init();
 	OutputDev_Init();
 	GSM_Init();
@@ -129,6 +130,10 @@ void Task3(void* pvParameters)
 		{
 			OutputDev_Write(LOCK,false); //close door
 		}
+		if(IRSensor_TamperDetected())
+		{
+			//Sound alarm and send message for tamper detection
+		}
 	}
 }
 
@@ -149,13 +154,8 @@ void Task4(void* pvParameters)
 				BT_Transmit("\nSmart lock bluetooth codes:\n" 
                     "0. To open the door\n"
                     "1. To close the door\n"
-                    "2. To get security report\n"
-                    "3. To set the time\n");
-				//Reset buffer if IDLE line is detected
-				if(bluetoothStatus == IDLE_LINE)
-				{
-					BT_RxBufferInit(btRxBuffer,BUFFER_SIZE); 
-				}
+                    "2. To get security report\n");
+				BT_RxBufferReset(bluetoothStatus,btRxBuffer,BUFFER_SIZE);
 				//Awaiting bluetooth code
 				btStatus_t btStatus = NO_DATA;
 				while(1)
@@ -177,14 +177,8 @@ void Task4(void* pvParameters)
 						break;
 					case '2':
 						break;
-					case '3':
-						break;
 				}
-				//Reset buffer if IDLE line is detected
-				if(btStatus == IDLE_LINE)
-				{
-					BT_RxBufferInit(btRxBuffer,BUFFER_SIZE); 
-				}
+				BT_RxBufferReset(btStatus,btRxBuffer,BUFFER_SIZE);
 			}
 		}
 	}

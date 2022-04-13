@@ -32,6 +32,14 @@ void BT_RxBufferInit(uint8_t* pBuffer,uint8_t bufferSize)
 										DMA_CHANNEL_ENABLE);	
 }
 
+void BT_RxBufferReset(btStatus_t status,uint8_t* pBuffer,uint8_t bufferSize)
+{
+	if(status == IDLE_LINE)
+	{
+		BT_RxBufferInit(pBuffer,bufferSize);
+	}
+}
+
 void BT_Transmit(char* pData)
 {
 	USART_WriteChars(USART3,pData);

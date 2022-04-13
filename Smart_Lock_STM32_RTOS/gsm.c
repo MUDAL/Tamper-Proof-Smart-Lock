@@ -21,14 +21,14 @@ void GSM_SendText(char* phoneNo,char* msg)
 {
 	char atCmgsCmd[27] = "AT+CMGS=\"";
 	USART_WriteChars(USART2,"AT+CMGF=1\r\n");
-	vTaskDelay(pdMS_TO_TICKS(500));
+	vTaskDelay(pdMS_TO_TICKS(250));
 	strcat(atCmgsCmd,phoneNo);
 	strcat(atCmgsCmd,"\"\r\n");
 	USART_WriteChars(USART2,atCmgsCmd);
-	vTaskDelay(pdMS_TO_TICKS(500));
+	vTaskDelay(pdMS_TO_TICKS(250));
 	USART_WriteChars(USART2,msg);
 	USART_WriteChars(USART2,"\r\n");
-	vTaskDelay(pdMS_TO_TICKS(500));
+	vTaskDelay(pdMS_TO_TICKS(250));
 	USART_WriteByte(USART2,26); //command termination
-	vTaskDelay(pdMS_TO_TICKS(500));
+	vTaskDelay(pdMS_TO_TICKS(250));
 }

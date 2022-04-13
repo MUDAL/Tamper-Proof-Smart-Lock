@@ -1,7 +1,5 @@
 #include "stm32f10x.h"                  // Device header
 #include "gpio.h"
-#include <FreeRTOS.h>
-#include <task.h>
 #include "button.h"
 
 void Button_Init(void)
