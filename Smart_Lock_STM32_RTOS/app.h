@@ -25,9 +25,15 @@ typedef enum
   PASSWORD_CORRECT
 }pw_s;
 
-#define BUFFER_SIZE  		  20 //Max buffer size 
-#define PSWD_EEPROMPAGE	   0
-#define PHONE_EEPROMPAGE	 5
+#define BUFFER_SIZE  		  	20 //Max buffer size 
+#define PSWD_EEPROMPAGE	   	0
+#define PHONE_EEPROMPAGE	 	5
+
+//Timeouts (in seconds)
+#define TIMEOUT_LOCK			 	8
+#define TIMEOUT_BUZZER			10
+#define TIMEOUT_KEYPAD			10
+#define TIMEOUT_FINGERPRINT	10
 
 extern void Display(char* msg);
 extern void GetKeypadData(char* keyBuffer);
@@ -38,5 +44,6 @@ extern void IntruderAlert(char* msg);
 extern void CheckKey(char key);
 extern void StoreFingerprint(void);
 uint8_t FindFingerprint(void);
+extern bool HasTimedOut(uint8_t* tCount,uint8_t timeout);
 
 #endif //APP_H

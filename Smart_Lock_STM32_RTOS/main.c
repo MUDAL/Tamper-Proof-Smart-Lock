@@ -1,5 +1,8 @@
 #include "app.h"
 
+//Shared variables (between tasks 2 and 5)
+bool invalidInput = false;
+bool invalidFingerprint = false;
 //Tasks
 void Task1(void* pvParameters);
 void Task2(void* pvParameters);
@@ -41,8 +44,6 @@ void Task1(void* pvParameters)
 
 void Task2(void* pvParameters)
 {
-	bool invalidInput = false;
-	bool invalidFingerprint = false;
 	bool prevPressed[4][4] = {0};
 	uint8_t numOfInvalidPrints = 0;
 	while(1)
@@ -71,8 +72,10 @@ void Task2(void* pvParameters)
 							CheckKey(key);
 							break;
 						case PASSWORD_INCORRECT:
+							taskENTER_CRITICAL();
+							invalidInput = true; //critical section
+							taskEXIT_CRITICAL();
 							Display("Incorrect");
-							invalidInput = true;
 							IntruderAlert("Intruder: Wrong inputs from Keypad!!!!!");
 							break;
 					}    
@@ -102,7 +105,9 @@ void Task2(void* pvParameters)
 					}
 					else
 					{
-						invalidFingerprint = true;
+						taskENTER_CRITICAL();
+						invalidFingerprint = true; //critical section
+						taskEXIT_CRITICAL();
 						Display("Invalid\nfingerprint"); 
 						IntruderAlert("Unregistered fingerprints detected");
 						OLED_ClearScreen();
@@ -190,10 +195,50 @@ void Task5(void* pvParameters)
 {
 	uint8_t tLock = 0;
 	uint8_t tBuzzer = 0;
+	uint8_t tKeypadInput = 0;
+	uint8_t tFingerprint = 0;
 	while(1)
 	{
 		vTaskDelay(pdMS_TO_TICKS(1000));
-		OutputDev_Timeout(LOCK,&tLock,TIMEOUT_LOCK);
-		OutputDev_Timeout(BUZZER,&tBuzzer,TIMEOUT_BUZZER);
+		//Timeout for lock
+		if(OutputDev_Read(LOCK))
+		{
+			if(HasTimedOut(&tLock,TIMEOUT_LOCK))
+			{
+				OutputDev_Write(LOCK,false);
+			}
+		}
+		else
+		{
+			tLock = 0;
+		}
+		//Timeout for buzzer
+		if(OutputDev_Read(BUZZER))
+		{
+			if(HasTimedOut(&tBuzzer,TIMEOUT_BUZZER))
+			{
+				OutputDev_Write(BUZZER,false);
+			}
+		}
+		//Timeout for invalid keypad input
+		if(invalidInput)
+		{
+			if(HasTimedOut(&tKeypadInput,TIMEOUT_KEYPAD))
+			{
+				taskENTER_CRITICAL();
+				invalidInput = false; //critical section
+				taskEXIT_CRITICAL();
+			}
+		}
+		//Timeout for invalid fingerprint
+		if(invalidFingerprint)
+		{
+			if(HasTimedOut(&tFingerprint,TIMEOUT_FINGERPRINT))
+			{
+				taskENTER_CRITICAL();
+				invalidFingerprint = false; //critical section
+				taskEXIT_CRITICAL();
+			}
+		}
 	}
 }

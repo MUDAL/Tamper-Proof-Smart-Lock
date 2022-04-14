@@ -227,3 +227,14 @@ uint8_t FindFingerprint(void)
   }
   return f_status;	
 }
+
+bool HasTimedOut(uint8_t* tCount,uint8_t timeout)
+{
+	(*tCount)++;
+	if(*tCount == timeout)
+	{
+		*tCount = 0;
+		return true;
+	}
+	return false;
+}

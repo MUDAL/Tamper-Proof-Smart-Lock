@@ -47,19 +47,3 @@ bool OutputDev_Read(outputDev_t dev)
 	}
 	return GPIO_OutputRead(GPIOA,gpioPin);
 }
-
-void OutputDev_Timeout(outputDev_t dev,uint8_t* tCount,uint8_t timeout)
-{
-	if(OutputDev_Read(dev))
-	{
-		(*tCount)++;
-		if(*tCount == timeout)
-		{
-			OutputDev_Write(dev,false);
-		}
-	}
-	else
-	{
-		*tCount = 0;
-	}
-}
