@@ -1,8 +1,9 @@
 #include "app.h"
 
-//Shared variables (between tasks 2 and 5)
+//Shared variables 
 bool invalidInput = false;
-bool invalidFingerprint = false;
+bool invalidPrint = false;
+bool deviceTampered = false;
 //Tasks
 void Task1(void* pvParameters);
 void Task2(void* pvParameters);
@@ -85,7 +86,7 @@ void Task2(void* pvParameters)
 			}
 		}
 		//Fingerprint detection
-		if(!invalidFingerprint)
+		if(!invalidPrint)
 		{
 			uint8_t f_status = FindFingerprint();
 			switch(f_status)
@@ -106,7 +107,7 @@ void Task2(void* pvParameters)
 					else
 					{
 						taskENTER_CRITICAL();
-						invalidFingerprint = true; //critical section
+						invalidPrint = true; //critical section
 						taskEXIT_CRITICAL();
 						Display("Invalid\nfingerprint"); 
 						IntruderAlert("Unregistered fingerprints detected");
@@ -137,9 +138,16 @@ void Task3(void* pvParameters)
 		{
 			OutputDev_Write(LOCK,false); //close door
 		}
-		if(IRSensor_TamperDetected())
+		//Tamper detection
+		if(!deviceTampered)
 		{
-			//Sound alarm and send message for tamper detection
+			if(IRSensor_TamperDetected())
+			{
+				taskENTER_CRITICAL();
+				deviceTampered = true; //critical section
+				taskEXIT_CRITICAL();
+				IntruderAlert("Tamper detected!!!!!");
+			}
 		}
 	}
 }
@@ -159,9 +167,9 @@ void Task4(void* pvParameters)
 			if(strcmp((char*)btRxBuffer,eepromPswd) == 0)
 			{
 				BT_Transmit("\nSmart lock bluetooth codes:\n" 
-                    "0. To open the door\n"
-                    "1. To close the door\n"
-                    "2. To get security report\n");
+                    "0. Open door\n"
+                    "1. Close door\n"
+                    "2. Get security report\n");
 				BT_RxBufferReset(bluetoothStatus,btRxBuffer,BUFFER_SIZE);
 				//Awaiting bluetooth code
 				btStatus_t btStatus = NO_DATA;
@@ -196,7 +204,8 @@ void Task5(void* pvParameters)
 	uint8_t tLock = 0;
 	uint8_t tBuzzer = 0;
 	uint8_t tKeypadInput = 0;
-	uint8_t tFingerprint = 0;
+	uint8_t tPrint = 0;
+	uint8_t tDeviceTamper = 0;
 	while(1)
 	{
 		vTaskDelay(pdMS_TO_TICKS(1000));
@@ -210,7 +219,7 @@ void Task5(void* pvParameters)
 		}
 		else
 		{
-			tLock = 0;
+			tLock = 0; //due to button press
 		}
 		//Timeout for buzzer
 		if(OutputDev_Read(BUZZER))
@@ -220,25 +229,9 @@ void Task5(void* pvParameters)
 				OutputDev_Write(BUZZER,false);
 			}
 		}
-		//Timeout for invalid keypad input
-		if(invalidInput)
-		{
-			if(HasTimedOut(&tKeypadInput,TIMEOUT_KEYPAD))
-			{
-				taskENTER_CRITICAL();
-				invalidInput = false; //critical section
-				taskEXIT_CRITICAL();
-			}
-		}
-		//Timeout for invalid fingerprint
-		if(invalidFingerprint)
-		{
-			if(HasTimedOut(&tFingerprint,TIMEOUT_FINGERPRINT))
-			{
-				taskENTER_CRITICAL();
-				invalidFingerprint = false; //critical section
-				taskEXIT_CRITICAL();
-			}
-		}
+		//Handling timeouts due to shared data between tasks
+		IntertaskTimeout(&invalidInput,&tKeypadInput,TIMEOUT_KEYPAD);
+		IntertaskTimeout(&invalidPrint,&tPrint,TIMEOUT_FINGERPRINT);
+		IntertaskTimeout(&deviceTampered,&tDeviceTamper,TIMEOUT_TAMPER);
 	}
 }

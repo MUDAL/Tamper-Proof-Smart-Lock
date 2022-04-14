@@ -34,6 +34,7 @@ typedef enum
 #define TIMEOUT_BUZZER			10
 #define TIMEOUT_KEYPAD			10
 #define TIMEOUT_FINGERPRINT	10
+#define TIMEOUT_TAMPER			25
 
 extern void Display(char* msg);
 extern void GetKeypadData(char* keyBuffer);
@@ -45,5 +46,8 @@ extern void CheckKey(char key);
 extern void StoreFingerprint(void);
 uint8_t FindFingerprint(void);
 extern bool HasTimedOut(uint8_t* tCount,uint8_t timeout);
+extern void IntertaskTimeout(bool* pSharedData,
+														 uint8_t* tCount,
+														 uint8_t timeout);
 
 #endif //APP_H
