@@ -44,7 +44,7 @@ extern void InputPhoneNumber(void);
 extern void IntruderAlert(char* msg);
 extern void CheckKey(char key);
 extern void StoreFingerprint(void);
-uint8_t FindFingerprint(void);
+extern uint8_t FindFingerprint(void);
 extern bool HasTimedOut(uint8_t* tCount,uint8_t timeout);
 extern void IntertaskTimeout(bool* pSharedData,
 														 uint8_t* tCount,
