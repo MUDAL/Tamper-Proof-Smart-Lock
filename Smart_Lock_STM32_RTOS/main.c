@@ -166,10 +166,7 @@ void Task4(void* pvParameters)
 		{
 			if(strcmp((char*)btRxBuffer,eepromPswd) == 0)
 			{
-				BT_Transmit("\nSmart lock bluetooth codes:\n" 
-                    "0. Open door\n"
-                    "1. Close door\n"
-                    "2. Get security report\n");
+				BT_Transmit("0"); //Send '0' to the app to signify reception of correct password
 				BT_RxBufferReset(bluetoothStatus,btRxBuffer,BUFFER_SIZE);
 				//Awaiting bluetooth code
 				btStatus_t btStatus = NO_DATA;
@@ -194,6 +191,11 @@ void Task4(void* pvParameters)
 						break;
 				}
 				BT_RxBufferReset(btStatus,btRxBuffer,BUFFER_SIZE);
+			}
+			else
+			{
+				BT_Transmit("1"); //Send '1' to the app to signify reception of wrong password
+				BT_RxBufferReset(bluetoothStatus,btRxBuffer,BUFFER_SIZE);
 			}
 		}
 	}
