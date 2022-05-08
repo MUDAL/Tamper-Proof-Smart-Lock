@@ -125,7 +125,6 @@ void IntruderAlert(char* msg)
 
 void CheckKey(char key)
 {
-	bool prevPressed[4][4] = {0};
   if(key == '*')
   {
     Display("Correct");
@@ -138,10 +137,10 @@ void CheckKey(char key)
             "1.Phone number\n"
             "2.Store print\n"
             "3.Delete prints\n");
-    char getKey = '\0';
-    while(getKey != 'B')
+		bool prevPressed[4][4] = {0};
+    while(1)
     {
-      getKey = Keypad_GetChar(prevPressed);
+      char getKey = Keypad_GetChar(prevPressed);
       if(getKey == '0')
       {
         Display("Enter new password");
@@ -166,6 +165,10 @@ void CheckKey(char key)
         Display("Database cleared");
         break;
       }
+			else if(getKey == 'B')
+			{
+				break;
+			}
     }
   }
 }
@@ -239,6 +242,13 @@ bool HasTimedOut(uint8_t* tCount,uint8_t timeout)
 	return false;
 }
 
+void SetIntertaskData(bool* pSharedData,bool state)
+{
+	taskENTER_CRITICAL();
+	*pSharedData = state; //critical section
+	taskEXIT_CRITICAL();	
+}
+
 void IntertaskTimeout(bool* pSharedData,
 											uint8_t* tCount,
 											uint8_t timeout)
@@ -247,9 +257,7 @@ void IntertaskTimeout(bool* pSharedData,
 	{
 		if(HasTimedOut(tCount,timeout))
 		{
-			taskENTER_CRITICAL();
-			*pSharedData = false; //critical section
-			taskEXIT_CRITICAL();
+			SetIntertaskData(pSharedData,false);
 		}
 	}
 }

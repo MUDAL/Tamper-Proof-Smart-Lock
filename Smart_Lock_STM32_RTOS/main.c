@@ -4,6 +4,7 @@
 bool invalidInput = false;
 bool invalidPrint = false;
 bool deviceTampered = false;
+bool invalidBluetoothPswd = false;
 //Tasks
 void Task1(void* pvParameters);
 void Task2(void* pvParameters);
@@ -73,9 +74,7 @@ void Task2(void* pvParameters)
 							CheckKey(key);
 							break;
 						case PASSWORD_INCORRECT:
-							taskENTER_CRITICAL();
-							invalidInput = true; //critical section
-							taskEXIT_CRITICAL();
+							SetIntertaskData(&invalidInput,true);
 							Display("Incorrect");
 							IntruderAlert("Intruder: Wrong inputs from Keypad!!!!!");
 							break;
@@ -106,9 +105,7 @@ void Task2(void* pvParameters)
 					}
 					else
 					{
-						taskENTER_CRITICAL();
-						invalidPrint = true; //critical section
-						taskEXIT_CRITICAL();
+						SetIntertaskData(&invalidPrint,true);
 						Display("Invalid\nfingerprint"); 
 						IntruderAlert("Unregistered fingerprints detected");
 						OLED_ClearScreen();
@@ -143,9 +140,7 @@ void Task3(void* pvParameters)
 		{
 			if(IRSensor_TamperDetected())
 			{
-				taskENTER_CRITICAL();
-				deviceTampered = true; //critical section
-				taskEXIT_CRITICAL();
+				SetIntertaskData(&deviceTampered,true);
 				IntruderAlert("Tamper detected!!!!!");
 			}
 		}
@@ -154,48 +149,72 @@ void Task3(void* pvParameters)
 
 void Task4(void* pvParameters)
 {
+	uint8_t wrongAttempts = 0;
 	uint8_t btRxBuffer[BUFFER_SIZE] = {0};
 	BT_RxBufferInit(btRxBuffer,BUFFER_SIZE);
 	while(1)
 	{
-		vTaskDelay(pdMS_TO_TICKS(200));
-		char eepromPswd[BUFFER_SIZE] = {0};
-		EEPROM_GetData((uint8_t*)eepromPswd,BUFFER_SIZE,PSWD_EEPROMPAGE);
-		btStatus_t bluetoothStatus = BT_Receive();
-		if(bluetoothStatus != NO_DATA)
+		if(!invalidBluetoothPswd)
 		{
-			if(strcmp((char*)btRxBuffer,eepromPswd) == 0)
+			vTaskDelay(pdMS_TO_TICKS(200));
+			char eepromPswd[BUFFER_SIZE] = {0};
+			EEPROM_GetData((uint8_t*)eepromPswd,BUFFER_SIZE,PSWD_EEPROMPAGE);
+			btStatus_t bluetoothStatus = BT_Receive();
+			
+			if(bluetoothStatus != NO_DATA)
 			{
-				BT_Transmit("0"); //Send '0' to the app to signify reception of correct password
-				BT_RxBufferReset(bluetoothStatus,btRxBuffer,BUFFER_SIZE);
-				//Awaiting bluetooth code
-				btStatus_t btStatus = NO_DATA;
-				while(1)
+				if(strcmp((char*)btRxBuffer,eepromPswd) == 0)
 				{
-					btStatus = BT_Receive();
-					if(btStatus != NO_DATA)
+					BT_Transmit("0"); //Send '0' to the app to signify reception of correct password
+					BT_RxBufferReset(bluetoothStatus,btRxBuffer,BUFFER_SIZE);
+					//Awaiting bluetooth code
+					btStatus_t btStatus = NO_DATA;
+					while(1)
 					{
-						break;
+						btStatus = BT_Receive();
+						if(btStatus != NO_DATA)
+						{
+							break;
+						}
+					}
+					//Check which code was received
+					switch(btRxBuffer[0])
+					{
+						case '0':
+							OutputDev_Write(LOCK,true);
+							break;
+						case '1':
+							OutputDev_Write(LOCK,false);
+							break;
+						case '2':
+							break;
+					}
+					memset(btRxBuffer,'\0',BUFFER_SIZE);
+					BT_RxBufferReset(btStatus,btRxBuffer,BUFFER_SIZE);
+				}
+				else
+				{
+					BT_Transmit("1"); //Send '1' to the app to signify reception of wrong password
+					memset(btRxBuffer,'\0',BUFFER_SIZE); //clear buffer
+					BT_RxBufferReset(bluetoothStatus,btRxBuffer,BUFFER_SIZE);
+					wrongAttempts++;
+					if(wrongAttempts == 3)
+					{
+						IntruderAlert("Failed attempt via Bluetooth");
+						SetIntertaskData(&invalidBluetoothPswd,true);
+						wrongAttempts = 0;
 					}
 				}
-				//Check which code was received
-				switch(btRxBuffer[0])
-				{
-					case '0':
-						OutputDev_Write(LOCK,true);
-						break;
-					case '1':
-						OutputDev_Write(LOCK,false);
-						break;
-					case '2':
-						break;
-				}
-				BT_RxBufferReset(btStatus,btRxBuffer,BUFFER_SIZE);
 			}
-			else
+		}
+		
+		else
+		{
+			//If timeout hasn't been reached, ignore incoming bluetooth data
+			if(strcmp((char*)btRxBuffer,"") != 0)
 			{
-				BT_Transmit("1"); //Send '1' to the app to signify reception of wrong password
-				BT_RxBufferReset(bluetoothStatus,btRxBuffer,BUFFER_SIZE);
+				memset(btRxBuffer,'\0',BUFFER_SIZE);
+				BT_RxBufferInit(btRxBuffer,BUFFER_SIZE);
 			}
 		}
 	}
@@ -208,13 +227,15 @@ void Task5(void* pvParameters)
 	uint8_t tKeypadInput = 0;
 	uint8_t tPrint = 0;
 	uint8_t tDeviceTamper = 0;
+	uint8_t tBluetooth = 0;
+	
 	while(1)
 	{
 		vTaskDelay(pdMS_TO_TICKS(1000));
 		//Timeout for lock
 		if(OutputDev_Read(LOCK))
 		{
-			if(HasTimedOut(&tLock,TIMEOUT_LOCK))
+			if(HasTimedOut(&tLock,DEVICE_TIMEOUT))
 			{
 				OutputDev_Write(LOCK,false);
 			}
@@ -226,14 +247,15 @@ void Task5(void* pvParameters)
 		//Timeout for buzzer
 		if(OutputDev_Read(BUZZER))
 		{
-			if(HasTimedOut(&tBuzzer,TIMEOUT_BUZZER))
+			if(HasTimedOut(&tBuzzer,DEVICE_TIMEOUT))
 			{
 				OutputDev_Write(BUZZER,false);
 			}
 		}
 		//Handling timeouts due to shared data between tasks
-		IntertaskTimeout(&invalidInput,&tKeypadInput,TIMEOUT_KEYPAD);
-		IntertaskTimeout(&invalidPrint,&tPrint,TIMEOUT_FINGERPRINT);
-		IntertaskTimeout(&deviceTampered,&tDeviceTamper,TIMEOUT_TAMPER);
+		IntertaskTimeout(&invalidInput,&tKeypadInput,DEVICE_TIMEOUT);
+		IntertaskTimeout(&invalidPrint,&tPrint,DEVICE_TIMEOUT);
+		IntertaskTimeout(&deviceTampered,&tDeviceTamper,TAMPER_TIMEOUT);
+		IntertaskTimeout(&invalidBluetoothPswd,&tBluetooth,DEVICE_TIMEOUT);
 	}
 }

@@ -30,11 +30,8 @@ typedef enum
 #define PHONE_EEPROMPAGE	 	5
 
 //Timeouts (in seconds)
-#define TIMEOUT_LOCK			 	8
-#define TIMEOUT_BUZZER			10
-#define TIMEOUT_KEYPAD			10
-#define TIMEOUT_FINGERPRINT	10
-#define TIMEOUT_TAMPER			25
+#define DEVICE_TIMEOUT			10
+#define TAMPER_TIMEOUT			25
 
 extern void Display(char* msg);
 extern void GetKeypadData(char* keyBuffer);
@@ -46,6 +43,7 @@ extern void CheckKey(char key);
 extern void StoreFingerprint(void);
 extern uint8_t FindFingerprint(void);
 extern bool HasTimedOut(uint8_t* tCount,uint8_t timeout);
+extern void SetIntertaskData(bool* pSharedData,bool state);
 extern void IntertaskTimeout(bool* pSharedData,
 														 uint8_t* tCount,
 														 uint8_t timeout);
