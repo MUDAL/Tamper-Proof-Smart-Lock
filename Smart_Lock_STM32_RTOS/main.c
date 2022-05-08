@@ -154,9 +154,9 @@ void Task4(void* pvParameters)
 	BT_RxBufferInit(btRxBuffer,BUFFER_SIZE);
 	while(1)
 	{
+		vTaskDelay(pdMS_TO_TICKS(200));
 		if(!invalidBluetoothPswd)
 		{
-			vTaskDelay(pdMS_TO_TICKS(200));
 			char eepromPswd[BUFFER_SIZE] = {0};
 			EEPROM_GetData((uint8_t*)eepromPswd,BUFFER_SIZE,PSWD_EEPROMPAGE);
 			btStatus_t bluetoothStatus = BT_Receive();
