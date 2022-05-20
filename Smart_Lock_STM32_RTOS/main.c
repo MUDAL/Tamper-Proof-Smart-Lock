@@ -108,6 +108,7 @@ void Task2(void* pvParameters)
 						//adding '0' converts int to char
 						msg[6] = '0' + numOfInvalidPrints + 1; 
 						Display(msg); 
+						numOfInvalidPrints++;
 					}
 					else
 					{
@@ -117,7 +118,6 @@ void Task2(void* pvParameters)
 						OLED_ClearScreen();
 						numOfInvalidPrints = 0;
 					}
-					numOfInvalidPrints++;
 					break;
 			} 
 		}		
@@ -225,6 +225,7 @@ void Task4(void* pvParameters)
 		else
 		{
 			//If timeout hasn't been reached, ignore incoming bluetooth data
+			//The timeout is due to wrong password via bluetooth
 			if(strcmp((char*)btRxBuffer,"") != 0)
 			{
 				memset(btRxBuffer,'\0',BUFFER_SIZE);

@@ -1,6 +1,6 @@
 Dependencies for Project 'smart_lock_rtos', Target 'stm32f103': (DO NOT MODIFY !)
 CompilerVersion: 5060960::V5.06 update 7 (build 960)::.\ARMCC
-F (.\main.c)(0x6287612C)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I . -I .\FreeRTOS\source\include -I .\FreeRTOS\source\portable\RVDS\ARM_CM3-I.\RTE\Device\STM32F103C8-I.\RTE\_stm32f103-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_MD -D_RTE_-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+F (.\main.c)(0x6287EF02)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I . -I .\FreeRTOS\source\include -I .\FreeRTOS\source\portable\RVDS\ARM_CM3-I.\RTE\Device\STM32F103C8-I.\RTE\_stm32f103-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_MD -D_RTE_-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
 I (app.h)(0x6277B41B)
 I (C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include\stm32f10x.h)(0x61ADDBCE)
 I (.\RTE\_stm32f103\RTE_Components.h)(0x6253EFE2)
@@ -33,7 +33,7 @@ I (eeprom.h)(0x6249EF14)
 I (gsm.h)(0x624869F3)
 I (rtc.h)(0x62484A3C)
 I (ir_sensor.h)(0x6256C000)
-F (.\app.c)(0x6277A5E8)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I . -I .\FreeRTOS\source\include -I .\FreeRTOS\source\portable\RVDS\ARM_CM3-I.\RTE\Device\STM32F103C8-I.\RTE\_stm32f103-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_MD -D_RTE_-o .\objects\app.o --omf_browse .\objects\app.crf --depend .\objects\app.d)
+F (.\app.c)(0x6287EC2A)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I . -I .\FreeRTOS\source\include -I .\FreeRTOS\source\portable\RVDS\ARM_CM3-I.\RTE\Device\STM32F103C8-I.\RTE\_stm32f103-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_MD -D_RTE_-o .\objects\app.o --omf_browse .\objects\app.crf --depend .\objects\app.d)
 I (app.h)(0x6277B41B)
 I (C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include\stm32f10x.h)(0x61ADDBCE)
 I (.\RTE\_stm32f103\RTE_Components.h)(0x6253EFE2)
