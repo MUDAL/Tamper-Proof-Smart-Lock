@@ -235,7 +235,7 @@ void Task4(void* pvParameters)
 }
 
 /**
-	* @brief handles software timeouts initiated by other tasks
+	* @brief handles software timeouts
 	* Runs every second
 */
 void Task5(void* pvParameters)
