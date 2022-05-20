@@ -22,7 +22,10 @@ int main(void)
 	}
 }	
 
-//Tasks
+/**
+	* @brief initializes all modules required by the application
+	* This task is deleted after all required modules have been initialized
+*/
 void Task1(void* pvParameters)
 {
 	Keypad_Init();
@@ -44,6 +47,9 @@ void Task1(void* pvParameters)
 	}
 }
 
+/**
+	* @brief handles the HMI (Keypad and OLED) as well as fingerprint detection
+*/
 void Task2(void* pvParameters)
 {
 	bool prevPressed[4][4] = {0};
@@ -118,6 +124,10 @@ void Task2(void* pvParameters)
 	}
 }
 
+/**
+	* @brief monitors button presses and tamper detection
+	* Runs every 10ms
+*/
 void Task3(void* pvParameters)
 {
 	bool indoorPrevState = false;
@@ -147,6 +157,10 @@ void Task3(void* pvParameters)
 	}
 }
 
+/**
+	* @brief handles bluetooth communication between the smart lock and the app
+	* Runs every 200ms
+*/
 void Task4(void* pvParameters)
 {
 	uint8_t wrongAttempts = 0;
@@ -220,6 +234,10 @@ void Task4(void* pvParameters)
 	}
 }
 
+/**
+	* @brief handles software timeouts initiated by other tasks
+	* Runs every second
+*/
 void Task5(void* pvParameters)
 {
 	uint8_t tLock = 0;
