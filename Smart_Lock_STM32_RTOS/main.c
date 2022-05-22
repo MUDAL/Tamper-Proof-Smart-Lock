@@ -5,6 +5,12 @@ bool invalidInput = false;
 bool invalidPrint = false;
 bool deviceTampered = false;
 bool invalidBluetoothPswd = false;
+//Functions called by task 2
+static void HandleHMI(void);
+static void HandleFingerprint(void);
+//Functions called by task 4
+static void HandleRxBluetoothData(btStatus_t bluetoothStatus,
+																  uint8_t* btRxBuffer,char* eepromPswd);
 //Tasks
 void Task1(void* pvParameters);
 void Task2(void* pvParameters);
@@ -20,7 +26,131 @@ int main(void)
 	while(1)
 	{
 	}
-}	
+}
+
+//Functions required by task 2
+void HandleHMI(void)
+{
+	static bool prevPressed[4][4];
+	//HMI (Keypad + OLED)
+	if(!invalidInput)
+	{
+		char key = Keypad_GetChar(prevPressed);
+		if((key == '*') || (key == 'A'))
+		{
+			char pswd[BUFFER_SIZE] = {0};
+			char eepromPswd[BUFFER_SIZE] = {0};
+			EEPROM_GetData((uint8_t*)eepromPswd,BUFFER_SIZE,PSWD_EEPROMPAGE);
+			Display("Enter password");
+			GetKeypadData(pswd);
+			if(strcmp(pswd,eepromPswd) == 0)
+			{
+				CheckKey(key);
+			}
+			else
+			{
+				pw_s pswdState = RetryPassword(pswd,eepromPswd);
+				switch(pswdState)
+				{
+					case PASSWORD_CORRECT:
+						CheckKey(key);
+						break;
+					case PASSWORD_INCORRECT:
+						SetIntertaskData(&invalidInput,true);
+						Display("Incorrect");
+						IntruderAlert("Intruder: Wrong inputs from Keypad!!!!!");
+						break;
+				}    
+			}
+			vTaskDelay(pdMS_TO_TICKS(1000));
+			OLED_ClearScreen();
+		}
+	}	
+}
+
+void HandleFingerprint(void)
+{
+	static uint8_t numOfInvalidPrints;
+	//Fingerprint detection
+	if(!invalidPrint)
+	{
+		uint8_t f_status = FindFingerprint();
+		switch(f_status)
+		{
+			case FINGERPRINT_OK:
+				numOfInvalidPrints = 0;
+				OLED_ClearScreen();
+				OutputDev_Write(LOCK,true);
+				break;
+			case FINGERPRINT_NOTFOUND:
+				if(numOfInvalidPrints < 2)
+				{
+					char msg[8] = "Retry:";
+					//adding '0' converts int to char
+					msg[6] = '0' + numOfInvalidPrints + 1; 
+					Display(msg); 
+					(numOfInvalidPrints)++;
+				}
+				else
+				{
+					SetIntertaskData(&invalidPrint,true);
+					Display("Invalid\nfingerprint"); 
+					IntruderAlert("Unregistered fingerprints detected");
+					OLED_ClearScreen();
+					numOfInvalidPrints = 0;
+				}
+				break;
+		} 
+	}			
+}
+
+//Functions required by task 4
+void HandleRxBluetoothData(btStatus_t bluetoothStatus,
+													 uint8_t* btRxBuffer,char* eepromPswd)
+{
+	static uint8_t wrongAttempts;
+	if(strcmp((char*)btRxBuffer,eepromPswd) == 0)
+	{
+		BT_Transmit("0"); //Send '0' to the app to signify reception of correct password
+		BT_RxBufferReset(bluetoothStatus,btRxBuffer,BUFFER_SIZE);
+		//Awaiting bluetooth code
+		btStatus_t btStatus = NO_DATA;
+		while(btStatus == NO_DATA)
+		{
+			btStatus = BT_Receive();
+		}
+		//Check which code was received
+		switch(btRxBuffer[0])
+		{
+			case '0':
+				OutputDev_Write(LOCK,true);
+				break;
+			case '1':
+				OutputDev_Write(LOCK,false);
+				break;
+			case '2':
+				//Transmit times door was opened/closed
+				//Transmit time when a tamper was detected
+				//Transmit time when wrong attempts were made to open the door
+				break;
+		}
+		memset(btRxBuffer,'\0',BUFFER_SIZE);
+		BT_RxBufferReset(btStatus,btRxBuffer,BUFFER_SIZE);
+	}
+	else
+	{
+		BT_Transmit("1"); //Send '1' to the app to signify reception of wrong password
+		memset(btRxBuffer,'\0',BUFFER_SIZE); //clear buffer
+		BT_RxBufferReset(bluetoothStatus,btRxBuffer,BUFFER_SIZE);
+		wrongAttempts++;
+		if(wrongAttempts == 3)
+		{
+			IntruderAlert("Failed attempt via Bluetooth");
+			SetIntertaskData(&invalidBluetoothPswd,true);
+			wrongAttempts = 0;
+		}
+	}	
+}
 
 /**
 	* @brief initializes all modules required by the application
@@ -52,75 +182,10 @@ void Task1(void* pvParameters)
 */
 void Task2(void* pvParameters)
 {
-	bool prevPressed[4][4] = {0};
-	uint8_t numOfInvalidPrints = 0;
 	while(1)
 	{
-		//HMI (Keypad + OLED)
-		if(!invalidInput)
-		{
-			char key = Keypad_GetChar(prevPressed);
-			if((key == '*') || (key == 'A'))
-			{
-				char pswd[BUFFER_SIZE] = {0};
-				char eepromPswd[BUFFER_SIZE] = {0};
-				EEPROM_GetData((uint8_t*)eepromPswd,BUFFER_SIZE,PSWD_EEPROMPAGE);
-				Display("Enter password");
-				GetKeypadData(pswd);
-				if(strcmp(pswd,eepromPswd) == 0)
-				{
-					CheckKey(key);
-				}
-				else
-				{
-					pw_s pswdState = RetryPassword(pswd,eepromPswd);
-					switch(pswdState)
-					{
-						case PASSWORD_CORRECT:
-							CheckKey(key);
-							break;
-						case PASSWORD_INCORRECT:
-							SetIntertaskData(&invalidInput,true);
-							Display("Incorrect");
-							IntruderAlert("Intruder: Wrong inputs from Keypad!!!!!");
-							break;
-					}    
-				}
-				vTaskDelay(pdMS_TO_TICKS(1000));
-				OLED_ClearScreen();
-			}
-		}
-		//Fingerprint detection
-		if(!invalidPrint)
-		{
-			uint8_t f_status = FindFingerprint();
-			switch(f_status)
-			{
-				case FINGERPRINT_OK:
-					numOfInvalidPrints = 0;
-					OLED_ClearScreen();
-					OutputDev_Write(LOCK,true);
-					break;
-				case FINGERPRINT_NOTFOUND:
-					if(numOfInvalidPrints < 2)
-					{
-						char msg[8] = "Retry:";
-						//adding '0' converts int to char
-						msg[6] = '0' + numOfInvalidPrints + 1; 
-						Display(msg); 
-						numOfInvalidPrints++;
-					}
-					else
-					{
-						SetIntertaskData(&invalidPrint,true);
-						Display("Invalid\nfingerprint"); 
-						IntruderAlert("Unregistered fingerprints detected");
-						OLED_ClearScreen();
-						numOfInvalidPrints = 0;
-					}
-					break;
-			} 
-		}		
+		HandleHMI();
+		HandleFingerprint();
 	}
 }
 
@@ -136,8 +201,7 @@ void Task3(void* pvParameters)
 	{
 		vTaskDelay(pdMS_TO_TICKS(10));
 		if(Button_IsPressed(INDOOR,&indoorPrevState))
-		{
-			//Open door if closed, close if open
+		{ //Open door if closed, close if open
 			bool lockState = OutputDev_Read(LOCK);
 			OutputDev_Write(LOCK,!lockState);
 		}
@@ -146,13 +210,10 @@ void Task3(void* pvParameters)
 			OutputDev_Write(LOCK,false); //close door
 		}
 		//Tamper detection
-		if(!deviceTampered)
+		if(!deviceTampered && IRSensor_TamperDetected())
 		{
-			if(IRSensor_TamperDetected())
-			{
-				SetIntertaskData(&deviceTampered,true);
-				IntruderAlert("Tamper detected!!!!!");
-			}
+			SetIntertaskData(&deviceTampered,true);
+			IntruderAlert("Tamper detected!!!!!");
 		}
 	}
 }
@@ -163,7 +224,6 @@ void Task3(void* pvParameters)
 */
 void Task4(void* pvParameters)
 {
-	uint8_t wrongAttempts = 0;
 	uint8_t btRxBuffer[BUFFER_SIZE] = {0};
 	BT_RxBufferInit(btRxBuffer,BUFFER_SIZE);
 	while(1)
@@ -174,57 +234,11 @@ void Task4(void* pvParameters)
 			char eepromPswd[BUFFER_SIZE] = {0};
 			EEPROM_GetData((uint8_t*)eepromPswd,BUFFER_SIZE,PSWD_EEPROMPAGE);
 			btStatus_t bluetoothStatus = BT_Receive();
-			
 			if(bluetoothStatus != NO_DATA)
 			{
-				if(strcmp((char*)btRxBuffer,eepromPswd) == 0)
-				{
-					BT_Transmit("0"); //Send '0' to the app to signify reception of correct password
-					BT_RxBufferReset(bluetoothStatus,btRxBuffer,BUFFER_SIZE);
-					//Awaiting bluetooth code
-					btStatus_t btStatus = NO_DATA;
-					while(1)
-					{
-						btStatus = BT_Receive();
-						if(btStatus != NO_DATA)
-						{
-							break;
-						}
-					}
-					//Check which code was received
-					switch(btRxBuffer[0])
-					{
-						case '0':
-							OutputDev_Write(LOCK,true);
-							break;
-						case '1':
-							OutputDev_Write(LOCK,false);
-							break;
-						case '2':
-							//Transmit times door was opened/closed
-							//Transmit time when a tamper was detected
-							//Transmit time when wrong attempts were made to open the door
-							break;
-					}
-					memset(btRxBuffer,'\0',BUFFER_SIZE);
-					BT_RxBufferReset(btStatus,btRxBuffer,BUFFER_SIZE);
-				}
-				else
-				{
-					BT_Transmit("1"); //Send '1' to the app to signify reception of wrong password
-					memset(btRxBuffer,'\0',BUFFER_SIZE); //clear buffer
-					BT_RxBufferReset(bluetoothStatus,btRxBuffer,BUFFER_SIZE);
-					wrongAttempts++;
-					if(wrongAttempts == 3)
-					{
-						IntruderAlert("Failed attempt via Bluetooth");
-						SetIntertaskData(&invalidBluetoothPswd,true);
-						wrongAttempts = 0;
-					}
-				}
+				HandleRxBluetoothData(bluetoothStatus,btRxBuffer,eepromPswd);
 			}
 		}
-		
 		else
 		{
 			//If timeout hasn't been reached, ignore incoming bluetooth data
@@ -255,11 +269,10 @@ void Task5(void* pvParameters)
 	while(1)
 	{
 		vTaskDelay(pdMS_TO_TICKS(1000));
-		//Timeout for lock
 		if(OutputDev_Read(LOCK))
 		{
 			if(HasTimedOut(&tLock,DEVICE_TIMEOUT))
-			{
+			{//turn lock off if there's a timeout
 				OutputDev_Write(LOCK,false);
 			}
 		}
@@ -267,13 +280,9 @@ void Task5(void* pvParameters)
 		{
 			tLock = 0; //due to button press
 		}
-		//Timeout for buzzer
-		if(OutputDev_Read(BUZZER))
+		if(OutputDev_Read(BUZZER) && HasTimedOut(&tBuzzer,DEVICE_TIMEOUT))
 		{
-			if(HasTimedOut(&tBuzzer,DEVICE_TIMEOUT))
-			{
-				OutputDev_Write(BUZZER,false);
-			}
+			OutputDev_Write(BUZZER,false);
 		}
 		//Handling timeouts due to shared data between tasks
 		IntertaskTimeout(&invalidInput,&tKeypadInput,DEVICE_TIMEOUT);
