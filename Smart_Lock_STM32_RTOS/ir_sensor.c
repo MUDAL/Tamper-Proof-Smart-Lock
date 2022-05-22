@@ -2,6 +2,11 @@
 #include "gpio.h"
 #include "ir_sensor.h"
 
+/**
+	* @brief Initializes the IR sensor
+	* @param None
+	* @return None
+*/
 void IRSensor_Init(void)
 {
 	//GPIO Init (PA4)
@@ -12,11 +17,14 @@ void IRSensor_Init(void)
 								 GPIO_PULLUP_ENABLE);
 }
 
+/**
+	* @brief Checks if the device has been tampered with. 
+	* (This is due to the IR sensor's state being high)
+	* @param None
+	* @return true if tamper has been detected
+	* @return false if tamper has not been detected
+*/
 bool IRSensor_TamperDetected(void)
 {
-	if(GPIO_InputRead(GPIOA,GPIO_PIN4))
-	{
-		return true;
-	}
-	return false;
+	return GPIO_InputRead(GPIOA,GPIO_PIN4);
 }

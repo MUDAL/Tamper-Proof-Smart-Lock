@@ -233,6 +233,8 @@ uint8_t FindFingerprint(void)
 
 bool HasTimedOut(uint8_t* tCount,uint8_t timeout)
 {
+	//*tCount = pointer to variable that will be incremented every second.
+	//if *tCount = timeout, then a timeout for a certain event has occured.
 	(*tCount)++;
 	if(*tCount == timeout)
 	{
@@ -253,11 +255,8 @@ void IntertaskTimeout(bool* pSharedData,
 											uint8_t* tCount,
 											uint8_t timeout)
 {
-	if(*pSharedData)
+	if(*pSharedData && HasTimedOut(tCount,timeout))
 	{
-		if(HasTimedOut(tCount,timeout))
-		{
-			SetIntertaskData(pSharedData,false);
-		}
+		SetIntertaskData(pSharedData,false);
 	}
 }

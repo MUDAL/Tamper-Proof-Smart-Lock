@@ -69,19 +69,11 @@ void GPIO_OutputWrite(GPIO_TypeDef* GPIOx,
 
 bool GPIO_InputRead(GPIO_TypeDef* GPIOx, uint16_t gpioPin)
 {
-	if((GPIOx->IDR & gpioPin) == gpioPin)
-	{
-		return true;
-	}
-	return false;
+	return ((GPIOx->IDR & gpioPin) == gpioPin);
 }
 
 bool GPIO_OutputRead(GPIO_TypeDef* GPIOx, uint16_t gpioPin)
 {
-	if((GPIOx->ODR & gpioPin) == gpioPin)
-	{
-		return true;
-	}
-	return false;	
+	return ((GPIOx->ODR & gpioPin) == gpioPin);
 }
 	

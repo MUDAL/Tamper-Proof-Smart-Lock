@@ -201,6 +201,9 @@ void Task4(void* pvParameters)
 							OutputDev_Write(LOCK,false);
 							break;
 						case '2':
+							//Transmit times door was opened/closed
+							//Transmit time when a tamper was detected
+							//Transmit time when wrong attempts were made to open the door
 							break;
 					}
 					memset(btRxBuffer,'\0',BUFFER_SIZE);
@@ -241,6 +244,7 @@ void Task4(void* pvParameters)
 */
 void Task5(void* pvParameters)
 {
+	//timeouts
 	uint8_t tLock = 0;
 	uint8_t tBuzzer = 0;
 	uint8_t tKeypadInput = 0;

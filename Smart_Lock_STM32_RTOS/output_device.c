@@ -2,6 +2,11 @@
 #include "gpio.h"
 #include "output_device.h"
 
+/**
+	* @brief Initialize output devices (LOCK and BUZZER)
+	* @param None
+	* @return None
+*/
 void OutputDev_Init(void)
 {
 	//Lock(PA3) Init
@@ -18,6 +23,13 @@ void OutputDev_Init(void)
 	GPIO_OutputWrite(GPIOA,(GPIO_PIN3 | GPIO_PIN8),false);
 }
 
+/**
+	* @brief Turns output device on/off
+	* @param dev: Output device (LOCK or BUZZER)
+	* @param state: @arg true (turns dev on)
+	*								@arg false (turns dev off)
+	* @return None
+*/
 void OutputDev_Write(outputDev_t dev,bool state)
 {
 	uint16_t gpioPin;
@@ -33,6 +45,12 @@ void OutputDev_Write(outputDev_t dev,bool state)
 	GPIO_OutputWrite(GPIOA,gpioPin,state);
 }
 
+/**
+	* @brief Get current state of output device
+	* @param dev: Output device (LOCK or BUZZER)
+	* @return true if dev is on,
+	* @return false if dev is off.
+*/
 bool OutputDev_Read(outputDev_t dev)
 {
 	uint16_t gpioPin;

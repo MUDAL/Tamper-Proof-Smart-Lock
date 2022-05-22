@@ -14,7 +14,8 @@ by the application (i.e. binary or decimal or hexadecimal etc.) to a form usable
 RTC (i.e. BCD)
 */
 
-enum Register_address
+//Register addresses for the RTC module (DS3231)
+enum RegAddr
 {
 	RTC_ADDR = 0x68,
 	SEC_REG_ADDR = 0x00,
@@ -27,6 +28,11 @@ enum Register_address
 	STATUS_REG_ADDR = 0x0F
 };
 
+/**
+	* @brief Converts BCD to Hexadecimal
+  * @param bcd: BCD value to be converted to Hex
+	* @return Hex equivalent of 'bcd'
+*/
 static uint8_t BCDToHex(uint8_t bcd)
 {
 	uint8_t hex;
@@ -51,7 +57,6 @@ static uint8_t HexToBCD(uint8_t hex)
 {
 	uint8_t bcd;
 	uint8_t multipleOfTen = 0;
-	
 	while(hex >= 10)
 	{
 		hex -= 10;
@@ -61,12 +66,18 @@ static uint8_t HexToBCD(uint8_t hex)
 	return bcd;
 }
 
+/**
+	* @brief Gets current time from the RTC module
+	* @param pTime: pointer to struct containing information on time.
+	* After calling this function, the current time is stored in the...
+  * struct 'pTime' points to.
+	* @return None
+*/
 void RTC_GetTime(ds3231_t* pTime)
 {
 	
 	uint8_t timeBCD[3]; //sec,min,hour
 	uint8_t periodOfDay;
-	
 	I2C_ReadMultiByte(I2C1,RTC_ADDR,SEC_REG_ADDR,timeBCD,3);
 	if((timeBCD[2] & (1<<6)) == (1<<6))
 	{
@@ -92,11 +103,16 @@ void RTC_GetTime(ds3231_t* pTime)
 	pTime->period = periodOfDay;
 }
 
-void RTC_SetTime(uint8_t hour, uint8_t min)
+/**
+	* @brief Sets the time
+	* @param hour: hour
+	* @param min: minute
+	* @return None
+*/
+void RTC_SetTime(uint8_t hour,uint8_t min)
 {
 	uint8_t prevHoursBCD;
 	uint8_t timeBCD[3] = {0,0,0}; //sec,min,hour
-	
 	timeBCD[1] = HexToBCD(min);
 	timeBCD[2] = HexToBCD(hour);
 	I2C_ReadByte(I2C1, RTC_ADDR, HOUR_REG_ADDR, &prevHoursBCD);
@@ -107,10 +123,17 @@ void RTC_SetTime(uint8_t hour, uint8_t min)
 	I2C_WriteMultiByte(I2C1,RTC_ADDR,SEC_REG_ADDR,timeBCD,3);
 }
 
+/**
+	* @brief Sets the RTC module to 12-hour format
+  * @param periodOfDay: @arg RTC_PERIOD_PM (sets the period to PM)
+	*											@arg RTC_PERIOD_AM (sets the period to AM)
+	* An invalid argument to 'periodOfDay' will automatically..... 
+	* set the period to AM.
+	* @return None
+*/
 void RTC_12HourFormat(uint8_t periodOfDay)
 {
 	uint8_t hoursBCD;
-	
 	I2C_ReadByte(I2C1, RTC_ADDR, HOUR_REG_ADDR, &hoursBCD);
 	if(periodOfDay == RTC_PERIOD_PM)
 	{
@@ -124,10 +147,14 @@ void RTC_12HourFormat(uint8_t periodOfDay)
 	I2C_WriteByte(I2C1, RTC_ADDR, HOUR_REG_ADDR, hoursBCD);
 }
 
+/**
+	* @brief Sets the RTC module to 24-hour format
+	* @param None
+	* @return None
+*/
 void RTC_24HourFormat(void)
 {
 	uint8_t hoursBCD;
-	
 	I2C_ReadByte(I2C1, RTC_ADDR, HOUR_REG_ADDR, &hoursBCD);
 	hoursBCD &= ~((1<<6) | (1<<5));
 	I2C_WriteByte(I2C1, RTC_ADDR, HOUR_REG_ADDR, hoursBCD);

@@ -5,6 +5,13 @@
 #include "i2c.h"
 #include "system.h"
 
+/**
+	* @brief Configures clocks for all peripherals used, .......... 
+	* resets GPIO registers, and initializes a common I2C bus .....
+	* for all external components that will use the bus.
+	* @param None
+	* @return None
+*/
 void System_Config(void)
 {
 	Clock_HSI_8MHz_Init();
@@ -21,6 +28,11 @@ void System_Config(void)
 					 I2C_STANDARD_MODE_8MHZ_TRISE);
 }
 
+/**
+	* @brief Initiates a software reset
+	* @param None
+	* @return None
+*/
 void System_Reset(void)
 {
 	NVIC_SystemReset();

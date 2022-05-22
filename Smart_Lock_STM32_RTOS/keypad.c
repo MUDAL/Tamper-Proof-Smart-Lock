@@ -4,6 +4,15 @@
 #include <task.h>
 #include "keypad.h"
 
+/**
+	* @brief Checks if a key has been de-bounced (by reading its column pins).
+	* @param colIndex: @arg 0 (column 1)
+	*                  @arg 1 (column 2)
+	*									 @arg 2 (column 3)
+	*									 @arg 3 (column 4)
+	* @return true if button is pressed and has been de-bounced.
+	* @return false if button has not been de-bounced
+*/
 static bool IsDebounced(uint8_t colIndex)
 {
 	uint16_t colPin;
@@ -33,6 +42,15 @@ static bool IsDebounced(uint8_t colIndex)
 	return false;
 }	
 
+/**
+	* @brief Selects a row on the keypad by turning its pin off 
+	* and those of other rows on.
+	* @param rowIndex: @arg 0 (row 1)
+	*									 @arg 1 (row 2)
+	*                  @arg 2 (row 3)
+	*                  @arg 3 (row 4)
+	* @return None
+*/
 static void SelectRow(uint8_t rowIndex)
 {
 	switch(rowIndex)
@@ -60,6 +78,11 @@ static void SelectRow(uint8_t rowIndex)
 	}
 }
  
+/**
+	* @brief Initialize Keypad module
+	* @param None
+	* @return None
+*/
 void Keypad_Init(void)
 {
 	//Row pins as output [PB0,1,5,8]
@@ -85,6 +108,14 @@ void Keypad_Init(void)
 									GPIO_PULLUP_ENABLE);
 }
 
+/**
+	* @brief Gets a character corresponding to the current key ........... 
+	* that is being pressed on the 4x4 keypad.
+  * @param prevPressed: a 2D matrix containing the previous state of....
+	* all keys on the 4x4 matrix.
+	* @return character corresponding to pressed key
+	* @return '\0' if no key is pressed.
+*/
 char Keypad_GetChar(bool prevPressed[4][4])
 {
 	char keypadMatrix[4][4] =
