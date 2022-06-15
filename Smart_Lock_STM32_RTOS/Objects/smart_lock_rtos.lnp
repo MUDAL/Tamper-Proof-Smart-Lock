@@ -17,6 +17,7 @@
 ".\objects\tasks.o"
 ".\objects\port.o"
 ".\objects\heap_1.o"
+".\objects\timers.o"
 ".\objects\clock.o"
 ".\objects\dma.o"
 ".\objects\gpio.o"

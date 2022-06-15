@@ -24,11 +24,10 @@ void Display(char* msg)
 
 void GetKeypadData(char* keyBuffer)
 {
-	bool prevPressed[4][4] = {0};
   uint8_t i = 0;
   while(1)
   {
-    char key = Keypad_GetChar(prevPressed);
+    char key = Keypad_GetChar();
     switch(key)
     {
       case '\0':
@@ -137,10 +136,9 @@ void CheckKey(char key)
             "1.Phone number\n"
             "2.Store print\n"
             "3.Delete prints\n");
-		bool prevPressed[4][4] = {0};
     while(1)
     {
-      char getKey = Keypad_GetChar(prevPressed);
+      char getKey = Keypad_GetChar();
       if(getKey == '0')
       {
         Display("Enter new password");
@@ -246,9 +244,7 @@ bool HasTimedOut(uint8_t* tCount,uint8_t timeout)
 
 void SetIntertaskData(bool* pSharedData,bool state)
 {
-	taskENTER_CRITICAL();
-	*pSharedData = state; //critical section
-	taskEXIT_CRITICAL();	
+	*pSharedData = state; 	
 }
 
 void IntertaskTimeout(bool* pSharedData,

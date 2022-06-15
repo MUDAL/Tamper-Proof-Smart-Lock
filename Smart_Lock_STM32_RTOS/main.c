@@ -1,22 +1,23 @@
 #include "app.h"
 
-//Shared variables 
+//Shared variable(s) 
 bool invalidInput = false;
 bool invalidPrint = false;
 bool deviceTampered = false;
 bool invalidBluetoothPswd = false;
-//Functions called by task 2
+//Function(s) called by task 2
 static void HandleHMI(void);
 static void HandleFingerprint(void);
-//Functions called by task 4
+//Function(s) called by task 4
 static void HandleRxBluetoothData(btStatus_t bluetoothStatus,
 																  uint8_t* btRxBuffer,char* eepromPswd);
-//Tasks
+//Task(s)
 void Task1(void* pvParameters);
 void Task2(void* pvParameters);
 void Task3(void* pvParameters);
 void Task4(void* pvParameters);
-void Task5(void* pvParameters);
+//Timer callback(s)
+void TimerCallback(TimerHandle_t xTimer);
 
 int main(void)
 {
@@ -31,11 +32,10 @@ int main(void)
 //Functions required by task 2
 void HandleHMI(void)
 {
-	static bool prevPressed[4][4];
 	//HMI (Keypad + OLED)
 	if(!invalidInput)
 	{
-		char key = Keypad_GetChar(prevPressed);
+		char key = Keypad_GetChar();
 		if((key == '*') || (key == 'A'))
 		{
 			char pswd[BUFFER_SIZE] = {0};
@@ -89,7 +89,7 @@ void HandleFingerprint(void)
 					//adding '0' converts int to char
 					msg[6] = '0' + numOfInvalidPrints + 1; 
 					Display(msg); 
-					(numOfInvalidPrints)++;
+					numOfInvalidPrints++;
 				}
 				else
 				{
@@ -110,8 +110,8 @@ void HandleRxBluetoothData(btStatus_t bluetoothStatus,
 {
 	static uint8_t wrongAttempts;
 	if(strcmp((char*)btRxBuffer,eepromPswd) == 0)
-	{
-		BT_Transmit("0"); //Send '0' to the app to signify reception of correct password
+	{//Send '0' to the app to signify reception of correct password
+		BT_Transmit("0"); 
 		BT_RxBufferReset(bluetoothStatus,btRxBuffer,BUFFER_SIZE);
 		//Awaiting bluetooth code
 		btStatus_t btStatus = NO_DATA;
@@ -138,8 +138,8 @@ void HandleRxBluetoothData(btStatus_t bluetoothStatus,
 		BT_RxBufferReset(btStatus,btRxBuffer,BUFFER_SIZE);
 	}
 	else
-	{
-		BT_Transmit("1"); //Send '1' to the app to signify reception of wrong password
+	{//Send '1' to the app to signify reception of wrong password
+		BT_Transmit("1"); 
 		memset(btRxBuffer,'\0',BUFFER_SIZE); //clear buffer
 		BT_RxBufferReset(bluetoothStatus,btRxBuffer,BUFFER_SIZE);
 		wrongAttempts++;
@@ -167,10 +167,14 @@ void Task1(void* pvParameters)
 	OLED_Init();
 	OLED_ClearScreen();	
 	Fingerprint_Init();
+	//Task(s) init
 	xTaskCreate(Task2,"",300,NULL,1,NULL); //HMI and Fingerprint
 	xTaskCreate(Task3,"",100,NULL,1,NULL); //Buttons, IR sensor, tamper detection
 	xTaskCreate(Task4,"",300,NULL,1,NULL); //Bluetooth
-	xTaskCreate(Task5,"",100,NULL,1,NULL); //Timeouts
+	//Software timer init
+	TimerHandle_t softwareTimer;
+	softwareTimer = xTimerCreate("",pdMS_TO_TICKS(1000),pdTRUE,0,TimerCallback);
+	xTimerStart(softwareTimer,0);	
 	vTaskDelete(NULL);
 	while(1)
 	{
@@ -253,41 +257,37 @@ void Task4(void* pvParameters)
 }
 
 /**
-	* @brief handles software timeouts
-	* Runs every second
+	* @brief Callback function called every second by the  
+	* timer daemon task to handle all software timeouts
+	* required by the application.  
 */
-void Task5(void* pvParameters)
+void TimerCallback(TimerHandle_t xTimer)
 {
-	//timeouts
-	uint8_t tLock = 0;
-	uint8_t tBuzzer = 0;
-	uint8_t tKeypadInput = 0;
-	uint8_t tPrint = 0;
-	uint8_t tDeviceTamper = 0;
-	uint8_t tBluetooth = 0;
+	static uint8_t tLock;
+	static uint8_t tBuzzer;
+	static uint8_t tKeypadInput;
+	static uint8_t tPrint;
+	static uint8_t tDeviceTamper;
+	static uint8_t tBluetooth;
 	
-	while(1)
+	if(OutputDev_Read(LOCK))
 	{
-		vTaskDelay(pdMS_TO_TICKS(1000));
-		if(OutputDev_Read(LOCK))
-		{
-			if(HasTimedOut(&tLock,DEVICE_TIMEOUT))
-			{//turn lock off if there's a timeout
-				OutputDev_Write(LOCK,false);
-			}
+		if(HasTimedOut(&tLock,DEVICE_TIMEOUT))
+		{//turn lock off if there's a timeout
+			OutputDev_Write(LOCK,false);
 		}
-		else
-		{
-			tLock = 0; //due to button press
-		}
-		if(OutputDev_Read(BUZZER) && HasTimedOut(&tBuzzer,DEVICE_TIMEOUT))
-		{
-			OutputDev_Write(BUZZER,false);
-		}
-		//Handling timeouts due to shared data between tasks
-		IntertaskTimeout(&invalidInput,&tKeypadInput,DEVICE_TIMEOUT);
-		IntertaskTimeout(&invalidPrint,&tPrint,DEVICE_TIMEOUT);
-		IntertaskTimeout(&deviceTampered,&tDeviceTamper,TAMPER_TIMEOUT);
-		IntertaskTimeout(&invalidBluetoothPswd,&tBluetooth,DEVICE_TIMEOUT);
 	}
+	else
+	{
+		tLock = 0; //reset 'tLock' if door is closed by other means
+	}
+	if(OutputDev_Read(BUZZER) && HasTimedOut(&tBuzzer,DEVICE_TIMEOUT))
+	{
+		OutputDev_Write(BUZZER,false);
+	}
+	//Handling timeouts due to shared data between tasks
+	IntertaskTimeout(&invalidInput,&tKeypadInput,DEVICE_TIMEOUT);
+	IntertaskTimeout(&invalidPrint,&tPrint,DEVICE_TIMEOUT);
+	IntertaskTimeout(&deviceTampered,&tDeviceTamper,TAMPER_TIMEOUT);
+	IntertaskTimeout(&invalidBluetoothPswd,&tBluetooth,DEVICE_TIMEOUT);	
 }

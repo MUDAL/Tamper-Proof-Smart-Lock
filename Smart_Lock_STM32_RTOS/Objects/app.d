@@ -20,6 +20,7 @@
 .\objects\app.o: .\FreeRTOS\source\include\mpu_wrappers.h
 .\objects\app.o: .\FreeRTOS\source\include\task.h
 .\objects\app.o: .\FreeRTOS\source\include\list.h
+.\objects\app.o: .\FreeRTOS\source\include\timers.h
 .\objects\app.o: system.h
 .\objects\app.o: keypad.h
 .\objects\app.o: oled.h

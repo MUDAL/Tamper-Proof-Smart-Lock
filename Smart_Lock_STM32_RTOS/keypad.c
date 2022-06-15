@@ -4,6 +4,16 @@
 #include <task.h>
 #include "keypad.h"
 
+//2D matrix containing the previous state of all keys on the 4x4 matrix.
+static bool prevPressed[4][4] = {0};
+
+const char keypadMatrix[4][4] =
+{{'1','2','3','A'},
+ {'4','5','6','B'},
+ {'7','8','9','C'},
+ {'*','0','#','D'}
+};
+
 /**
 	* @brief Checks if a key has been de-bounced (by reading its column pins).
 	* @param colIndex: @arg 0 (column 1)
@@ -111,20 +121,12 @@ void Keypad_Init(void)
 /**
 	* @brief Gets a character corresponding to the current key ........... 
 	* that is being pressed on the 4x4 keypad.
-  * @param prevPressed: a 2D matrix containing the previous state of....
-	* all keys on the 4x4 matrix.
+  * @param None
 	* @return character corresponding to pressed key
 	* @return '\0' if no key is pressed.
 */
-char Keypad_GetChar(bool prevPressed[4][4])
+char Keypad_GetChar(void)
 {
-	char keypadMatrix[4][4] =
-	{{'1','2','3','A'},
-	 {'4','5','6','B'},
-	 {'7','8','9','C'},
-	 {'*','0','#','D'}
-	};
-
 	for(uint8_t i = 0; i < 4; i++)
 	{
 		SelectRow(i);

@@ -6,6 +6,7 @@
 #include <string.h>
 #include <FreeRTOS.h>
 #include <task.h>
+#include <timers.h>
 #include "system.h"
 #include "keypad.h"
 #include "oled.h"
@@ -42,7 +43,6 @@ extern void IntruderAlert(char* msg);
 extern void CheckKey(char key);
 extern void StoreFingerprint(void);
 extern uint8_t FindFingerprint(void);
-//Intertask communication
 extern bool HasTimedOut(uint8_t* tCount,uint8_t timeout);
 extern void SetIntertaskData(bool* pSharedData,bool state);
 extern void IntertaskTimeout(bool* pSharedData,
