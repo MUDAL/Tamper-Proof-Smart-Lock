@@ -1,6 +1,7 @@
 # Tamper-proof smart door lock  
 
-|  N   |  BME280     | STM32                           |  
+## Pinout
+|  N   |  STM32 pin    | Component pin                           |  
 | :------: | :------: | :------: |  
 1   |   VIN       |  3.3v                           |   
 2   |   GND       |  GND                            |   
