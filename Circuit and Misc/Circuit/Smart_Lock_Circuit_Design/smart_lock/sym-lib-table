@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name "LM2596_Module")(type "KiCad")(uri "${KIPRJMOD}/LM2596_Module.kicad_sym")(options "")(descr ""))
+  (lib (name "Bluepill_LDO")(type "KiCad")(uri "${KIPRJMOD}/Bluepill_LDO.kicad_sym")(options "")(descr ""))
+)
