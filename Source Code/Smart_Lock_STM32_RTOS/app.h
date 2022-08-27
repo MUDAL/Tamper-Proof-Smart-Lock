@@ -26,13 +26,13 @@ typedef enum
   PASSWORD_CORRECT
 }pw_s;
 
-#define BUFFER_SIZE  		  	20 //Max buffer size 
-#define PSWD_EEPROMPAGE	   	0
-#define PHONE_EEPROMPAGE	 	5
-
+#define BUFFER_SIZE  		  				20 //Max buffer size 
+#define PSWD_EEPROMPAGE	   				0
+#define PHONE_EEPROMPAGE	 				5
+#define NUM_OF_SECURITY_REPORTS		5 //Max number of security reports
 //Timeouts (in seconds)
-#define DEVICE_TIMEOUT			10
-#define TAMPER_TIMEOUT			25
+#define DEVICE_TIMEOUT						10
+#define TAMPER_TIMEOUT						25
 
 extern void Display(char* msg);
 extern void GetKeypadData(char* keyBuffer);
@@ -48,5 +48,6 @@ extern void SetIntertaskData(bool* pSharedData,bool state);
 extern void IntertaskTimeout(bool* pSharedData,
 														 uint8_t* tCount,
 														 uint8_t timeout);
+extern void IntegerToString(uint32_t integer, char* pBuffer);
 
 #endif //APP_H

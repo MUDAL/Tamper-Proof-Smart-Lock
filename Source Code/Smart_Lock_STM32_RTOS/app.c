@@ -256,3 +256,26 @@ void IntertaskTimeout(bool* pSharedData,
 		SetIntertaskData(pSharedData,false);
 	}
 }
+
+void IntegerToString(uint32_t integer, char* pBuffer)
+{
+	if (integer == 0)
+	{//Edge case  
+		pBuffer[0] = '0';
+		return;
+	}
+	uint32_t copyOfInt = integer;
+	uint8_t noOfDigits = 0;
+
+	while(copyOfInt > 0)
+	{
+		copyOfInt /= 10;
+		noOfDigits++;
+	}
+	while (integer > 0)
+	{
+		pBuffer[noOfDigits - 1] = '0' + (integer % 10);
+		integer /= 10;
+		noOfDigits--;
+	}
+}

@@ -1,16 +1,25 @@
 #include "app.h"
-
+//Enum(s)
+//Bluetooth commands/requests from the app to the smart lock
+enum AppCmd
+{
+	OPEN_DOOR = '0',
+	CLOSE_DOOR = '1',
+	SEND_REPORT = '2'
+};
 //Shared variable(s) 
 bool invalidInput = false;
 bool invalidPrint = false;
 bool deviceTampered = false;
 bool invalidBluetoothPswd = false;
-//Function(s) called by task 2
+static ds3231_t tamperDetectionTimes[NUM_OF_SECURITY_REPORTS];
+static ds3231_t failedAccessTimes[NUM_OF_SECURITY_REPORTS];
+//Function(s)
 static void HandleHMI(void);
 static void HandleFingerprint(void);
-//Function(s) called by task 4
+static void SendSecurityReportToApp(char* reportName,ds3231_t* timeOfReport);
 static void HandleRxBluetoothData(btStatus_t bluetoothStatus,
-																  uint8_t* btRxBuffer,char* eepromPswd);
+																	uint8_t* btRxBuffer,char* eepromPswd);
 //Task(s)
 void Task1(void* pvParameters);
 void Task2(void* pvParameters);
@@ -18,7 +27,7 @@ void Task3(void* pvParameters);
 void Task4(void* pvParameters);
 //Timer callback(s)
 void TimerCallback(TimerHandle_t xTimer);
-
+//Main 
 int main(void)
 {
 	System_Config();
@@ -29,7 +38,7 @@ int main(void)
 	}
 }
 
-//Functions required by task 2
+//Function definitions
 void HandleHMI(void)
 {
 	//HMI (Keypad + OLED)
@@ -104,11 +113,29 @@ void HandleFingerprint(void)
 	}			
 }
 
-//Functions required by task 4
+void SendSecurityReportToApp(char* reportName,ds3231_t* timeOfReport)
+{
+	char hour[] = "00";
+	char minute[] = "00";
+	BT_Transmit(reportName);
+	for(uint8_t i = 0; i < NUM_OF_SECURITY_REPORTS; i++)
+	{
+		//convert time of report (hour and min) to string then transmit
+		IntegerToString(timeOfReport[i].hours,hour);
+		IntegerToString(timeOfReport[i].minutes,minute);
+		BT_Transmit(hour);
+		BT_Transmit(":");
+		BT_Transmit(minute);
+		BT_Transmit(" "); //to separate the times
+	}
+}
+
 void HandleRxBluetoothData(btStatus_t bluetoothStatus,
 													 uint8_t* btRxBuffer,char* eepromPswd)
 {
+	const uint8_t maxNumOfWrongAttempts = 3;
 	static uint8_t wrongAttempts;
+	
 	if(strcmp((char*)btRxBuffer,eepromPswd) == 0)
 	{//Send '0' to the app to signify reception of correct password
 		BT_Transmit("0"); 
@@ -122,16 +149,19 @@ void HandleRxBluetoothData(btStatus_t bluetoothStatus,
 		//Check which code was received
 		switch(btRxBuffer[0])
 		{
-			case '0':
+			case OPEN_DOOR:
 				OutputDev_Write(LOCK,true);
 				break;
-			case '1':
+			case CLOSE_DOOR:
 				OutputDev_Write(LOCK,false);
 				break;
-			case '2':
-				//Transmit times door was opened/closed
+			case SEND_REPORT:
 				//Transmit time when a tamper was detected
+				SendSecurityReportToApp("Tamper detected-> ",tamperDetectionTimes);
+				BT_Transmit("\n");
 				//Transmit time when wrong attempts were made to open the door
+				SendSecurityReportToApp("Failed access-> ",failedAccessTimes);
+				BT_Transmit("\r"); //carriage return = end of data transmission to app
 				break;
 		}
 		memset(btRxBuffer,'\0',BUFFER_SIZE);
@@ -143,7 +173,7 @@ void HandleRxBluetoothData(btStatus_t bluetoothStatus,
 		memset(btRxBuffer,'\0',BUFFER_SIZE); //clear buffer
 		BT_RxBufferReset(bluetoothStatus,btRxBuffer,BUFFER_SIZE);
 		wrongAttempts++;
-		if(wrongAttempts == 3)
+		if(wrongAttempts == maxNumOfWrongAttempts)
 		{
 			IntruderAlert("Failed attempt via Bluetooth");
 			SetIntertaskData(&invalidBluetoothPswd,true);
@@ -152,6 +182,7 @@ void HandleRxBluetoothData(btStatus_t bluetoothStatus,
 	}	
 }
 
+//Tasks
 /**
 	* @brief initializes all modules required by the application
 	* This task is deleted after all required modules have been initialized
