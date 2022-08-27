@@ -158,10 +158,10 @@ void HandleRxBluetoothData(btStatus_t bluetoothStatus,
 			case SEND_REPORT:
 				//Transmit time when a tamper was detected
 				SendSecurityReportToApp("Tamper detected-> ",tamperDetectionTimes);
-				BT_Transmit("\n");
+				BT_Transmit("\n\n");
 				//Transmit time when wrong attempts were made to open the door
 				SendSecurityReportToApp("Failed access-> ",failedAccessTimes);
-				BT_Transmit("\r"); //carriage return = end of data transmission to app
+				BT_Transmit(END_OF_REPORT); //end of data transmission to app
 				break;
 		}
 		memset(btRxBuffer,'\0',BUFFER_SIZE);

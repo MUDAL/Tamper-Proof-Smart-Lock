@@ -30,6 +30,7 @@ typedef enum
 #define PSWD_EEPROMPAGE	   				0
 #define PHONE_EEPROMPAGE	 				5
 #define NUM_OF_SECURITY_REPORTS		5 //Max number of security reports
+#define END_OF_REPORT							"\r"
 //Timeouts (in seconds)
 #define DEVICE_TIMEOUT						10
 #define TAMPER_TIMEOUT						25
