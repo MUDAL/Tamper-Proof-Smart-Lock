@@ -7,6 +7,12 @@ enum AppCmd
 	CLOSE_DOOR = '1',
 	SEND_REPORT = '2'
 };
+//Type of security event
+typedef enum
+{
+	TAMPER_DETECTION_EVENT = 0,
+	FAILED_ACCESS_EVENT
+}securityEvent_t;
 //Shared variable(s) 
 bool invalidInput = false;
 bool invalidPrint = false;
@@ -17,6 +23,7 @@ static ds3231_t failedAccessTimes[NUM_OF_SECURITY_REPORTS];
 //Function(s)
 static void HandleHMI(void);
 static void HandleFingerprint(void);
+static void StoreSecurityTimestamp(securityEvent_t timestamp);
 static void SendSecurityReportToApp(char* reportName,ds3231_t* timeOfReport);
 static void HandleRxBluetoothData(btStatus_t bluetoothStatus,
 																	uint8_t* btRxBuffer,char* eepromPswd);
@@ -65,6 +72,7 @@ void HandleHMI(void)
 						CheckKey(key);
 						break;
 					case PASSWORD_INCORRECT:
+						StoreSecurityTimestamp(FAILED_ACCESS_EVENT);
 						SetIntertaskData(&invalidInput,true);
 						Display("Incorrect");
 						IntruderAlert("Intruder: Wrong inputs from Keypad!!!!!");
@@ -102,6 +110,7 @@ void HandleFingerprint(void)
 				}
 				else
 				{
+					StoreSecurityTimestamp(FAILED_ACCESS_EVENT);
 					SetIntertaskData(&invalidPrint,true);
 					Display("Invalid\nfingerprint"); 
 					IntruderAlert("Unregistered fingerprints detected");
@@ -113,13 +122,38 @@ void HandleFingerprint(void)
 	}			
 }
 
+/**
+	* @brief Store time at which security event took place.  
+	* Security event could be 'tamper detection' or 'failed
+	* access' due to incorrect password (keypad or app) or
+	* incorrect fingerprint.  
+*/
+void StoreSecurityTimestamp(securityEvent_t secEvent)
+{
+	static uint8_t tamperDetectionCounter;
+	static uint8_t failedAccessCounter;
+	switch(secEvent)
+	{
+		case TAMPER_DETECTION_EVENT:
+			RTC_GetTime(&tamperDetectionTimes[tamperDetectionCounter]);
+			tamperDetectionCounter++;
+			tamperDetectionCounter %= NUM_OF_SECURITY_REPORTS;
+			break;
+		case FAILED_ACCESS_EVENT:
+			RTC_GetTime(&failedAccessTimes[failedAccessCounter]);
+			failedAccessCounter++;
+			failedAccessCounter %= NUM_OF_SECURITY_REPORTS;
+			break;
+	}
+}
+
 void SendSecurityReportToApp(char* reportName,ds3231_t* timeOfReport)
 {
-	char hour[] = "00";
-	char minute[] = "00";
 	BT_Transmit(reportName);
 	for(uint8_t i = 0; i < NUM_OF_SECURITY_REPORTS; i++)
 	{
+		char hour[] = "00";
+		char minute[] = "00";
 		//convert time of report (hour and min) to string then transmit
 		IntegerToString(timeOfReport[i].hours,hour);
 		IntegerToString(timeOfReport[i].minutes,minute);
@@ -175,6 +209,7 @@ void HandleRxBluetoothData(btStatus_t bluetoothStatus,
 		wrongAttempts++;
 		if(wrongAttempts == maxNumOfWrongAttempts)
 		{
+			StoreSecurityTimestamp(FAILED_ACCESS_EVENT);
 			IntruderAlert("Failed attempt via Bluetooth");
 			SetIntertaskData(&invalidBluetoothPswd,true);
 			wrongAttempts = 0;
@@ -247,6 +282,7 @@ void Task3(void* pvParameters)
 		//Tamper detection
 		if(!deviceTampered && IRSensor_TamperDetected())
 		{
+			StoreSecurityTimestamp(TAMPER_DETECTION_EVENT);
 			SetIntertaskData(&deviceTampered,true);
 			IntruderAlert("Tamper detected!!!!!");
 		}
