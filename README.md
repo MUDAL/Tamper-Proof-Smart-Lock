@@ -16,3 +16,6 @@
 11  |   Buzzer      |   PA8   |     
 12  |   DS3231  RTC   |   I2C1 (PB6, PB7)  |   
 
+## Modifications to make  
+1. Replace IR sensor with ultrasonic sensor.  
+2. Setup a hardware timer for uS timing.   
