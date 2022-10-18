@@ -235,7 +235,7 @@ void Task1(void* pvParameters)
 	Fingerprint_Init();
 	//Task(s) init
 	xTaskCreate(Task2,"",300,NULL,1,NULL); //HMI and Fingerprint
-	xTaskCreate(Task3,"",100,NULL,1,NULL); //Buttons, IR sensor, tamper detection
+	xTaskCreate(Task3,"",100,NULL,1,NULL); //Buttons, sensor, tamper detection
 	xTaskCreate(Task4,"",300,NULL,1,NULL); //Bluetooth
 	//Software timer init
 	TimerHandle_t softwareTimer;
