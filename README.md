@@ -18,4 +18,7 @@
 
 ## Modifications to make  
 1. Replace IR sensor with ultrasonic sensor.  
-2. Setup a hardware timer for uS timing.   
+2. Setup a hardware timer for uS timing. (Timer interrupt with 100kHz repetition rate).  
+For the sensor's library, the function to get distance can be implemented as a ``callback`` which would  
+be called by the timer's interrupt handler.  
+
