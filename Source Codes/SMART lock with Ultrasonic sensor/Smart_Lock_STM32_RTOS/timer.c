@@ -12,11 +12,11 @@ void TIM_Init(TIM_TypeDef* TIMx,uint16_t prescale,uint16_t reload)
 void TIM_DelayMicros(TIM_TypeDef* TIMx)
 {
 	TIMx->CR1 |= TIM_CR1_CEN;
-	if((TIMx->SR & TIM_SR_UIF) == TIM_SR_UIF)
+	while((TIMx->SR & TIM_SR_UIF) != TIM_SR_UIF)
 	{
-		TIMx->SR &= ~TIM_SR_UIF; //clear UIF flag by writing 0.
-		TIMx->CR1 &= ~TIM_CR1_CEN; //stop timer
 	}
+	TIMx->SR &= ~TIM_SR_UIF; //clear UIF flag by writing 0.
+	TIMx->CR1 &= ~TIM_CR1_CEN; //stop timer
 }
 
 void TIM_InputCaptureInit(TIM_TypeDef* TIMx,uint16_t prescale,uint16_t reload)

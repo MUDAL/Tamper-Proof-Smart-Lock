@@ -18,6 +18,7 @@
 .\objects\sensor.o: .\FreeRTOS\source\include\mpu_wrappers.h
 .\objects\sensor.o: .\FreeRTOS\source\include\task.h
 .\objects\sensor.o: .\FreeRTOS\source\include\list.h
+.\objects\sensor.o: .\FreeRTOS\source\include\timers.h
 .\objects\sensor.o: gpio.h
 .\objects\sensor.o: timer.h
 .\objects\sensor.o: sensor.h

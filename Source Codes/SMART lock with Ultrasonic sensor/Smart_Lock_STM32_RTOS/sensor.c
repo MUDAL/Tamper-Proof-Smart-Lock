@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <FreeRTOS.h>
 #include <task.h>
+#include <timers.h>
 #include "gpio.h"
 #include "timer.h"
 #include "sensor.h"
@@ -9,17 +10,11 @@
 #define SYS_CLK_FREQ_MHZ		8
 #define IC_TIMER_PRESCALER	200 //prescaler for input capture timer
 
-static void TrigTask(void* pvParameters)
+static void TrigCallback(TimerHandle_t xTimer)
 {
-	while(1)
-	{
-		vTaskSuspendAll();
-		GPIO_OutputWrite(GPIOA,GPIO_PIN4,true);
-		TIM_DelayMicros(TIM2);
-		GPIO_OutputWrite(GPIOA,GPIO_PIN4,false);
-		xTaskResumeAll();
-		vTaskDelay(pdMS_TO_TICKS(50));
-	}
+	GPIO_OutputWrite(GPIOA,GPIO_PIN4,true);
+	TIM_DelayMicros(TIM2);
+	GPIO_OutputWrite(GPIOA,GPIO_PIN4,false);
 }
 
 void Sensor_Init(void)
@@ -34,8 +29,11 @@ void Sensor_Init(void)
 									GPIO_PORT_REG_LOW,
 									GPIO_PIN4_OUTPUT_MODE_2MHZ,
 									GPIO_GEN_PUR_OUTPUT_PUSH_PULL);	
-	xTaskCreate(TrigTask,"",100,NULL,1,NULL);
 	TIM_Init(TIM2,0,159);//Timer (20uS timebase for Trig pin)
+	//software timer for Trig pin
+	TimerHandle_t softwareTimer;
+	softwareTimer = xTimerCreate("",pdMS_TO_TICKS(1),pdTRUE,0,TrigCallback);
+	xTimerStart(softwareTimer,0);
 }
 
 uint32_t Sensor_GetDistance(void)

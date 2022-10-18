@@ -280,7 +280,7 @@ void Task3(void* pvParameters)
 			OutputDev_Write(LOCK,false); //close door
 		}
 		//Tamper detection
-		if(!deviceTampered && Sensor_GetDistance() > 10)
+		if(!deviceTampered && Sensor_GetDistance() > 13)
 		{
 			StoreSecurityTimestamp(TAMPER_DETECTION_EVENT);
 			SetIntertaskData(&deviceTampered,true);
