@@ -1,0 +1,14 @@
+.\objects\bluetooth.o: bluetooth.c
+.\objects\bluetooth.o: C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include\stm32f10x.h
+.\objects\bluetooth.o: .\RTE\_stm32f103\RTE_Components.h
+.\objects\bluetooth.o: C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include\core_cm3.h
+.\objects\bluetooth.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\bluetooth.o: C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include\cmsis_version.h
+.\objects\bluetooth.o: C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include\cmsis_compiler.h
+.\objects\bluetooth.o: C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include\cmsis_armcc.h
+.\objects\bluetooth.o: C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include\system_stm32f10x.h
+.\objects\bluetooth.o: gpio.h
+.\objects\bluetooth.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\bluetooth.o: uart.h
+.\objects\bluetooth.o: dma.h
+.\objects\bluetooth.o: bluetooth.h
