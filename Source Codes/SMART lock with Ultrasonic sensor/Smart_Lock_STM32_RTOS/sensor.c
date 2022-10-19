@@ -23,16 +23,16 @@ void Sensor_Init(void)
 	//[PA6 and PA7 capture rising and falling edges respectively]
 	GPIO_InputInit(GPIOA,GPIO_PORT_REG_LOW,GPIO_PIN6,GPIO_PIN6_INPUT_FLOATING,false);
 	GPIO_InputInit(GPIOA,GPIO_PORT_REG_LOW,GPIO_PIN7,GPIO_PIN7_INPUT_FLOATING,false);
-	TIM_InputCaptureInit(TIM3,(IC_TIMER_PRESCALER - 1),8000-1);
+	TIM_InputCaptureInit(TIM3,(IC_TIMER_PRESCALER - 1),50000-1);
 	//HCSR04 Trig pin init (PA4 -> Output)
 	GPIO_OutputInit(GPIOA,
 									GPIO_PORT_REG_LOW,
 									GPIO_PIN4_OUTPUT_MODE_2MHZ,
 									GPIO_GEN_PUR_OUTPUT_PUSH_PULL);	
-	TIM_Init(TIM2,0,159);//Timer (20uS timebase for Trig pin)
+	TIM_Init(TIM2,0,79);//Timer (10uS timebase for Trig pin)
 	//software timer for Trig pin
 	TimerHandle_t softwareTimer;
-	softwareTimer = xTimerCreate("",pdMS_TO_TICKS(1),pdTRUE,0,TrigCallback);
+	softwareTimer = xTimerCreate("",pdMS_TO_TICKS(10),pdTRUE,0,TrigCallback);
 	xTimerStart(softwareTimer,0);
 }
 

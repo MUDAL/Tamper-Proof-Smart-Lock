@@ -27,7 +27,7 @@ void TIM_InputCaptureInit(TIM_TypeDef* TIMx,uint16_t prescale,uint16_t reload)
 	TIMx->CCMR1 |= TIM_CCMR1_CC1S_0; //CC1 = input, IC1 is mapped to TI1
 	//NB: By default, when CC1 is configured as input, it is sensitive to rising edge signals
 	TIMx->CCMR1 |= TIM_CCMR1_CC2S_1; //CC2 = input, IC2 is mapped to TI1
-	//TIMx->CCMR1 |= (TIM_CCMR1_IC1F_0 | TIM_CCMR1_IC1F_1 | TIM_CCMR1_IC2F_0 | TIM_CCMR1_IC2F_1);//enabling input filter 
+	TIMx->CCMR1 |= (TIM_CCMR1_IC1F_0 | TIM_CCMR1_IC1F_1 | TIM_CCMR1_IC2F_0 | TIM_CCMR1_IC2F_1);//enabling input filter 
   TIMx->CCER |= (TIM_CCER_CC2P); //enable sensitivity of CC2 to falling edge 
 	TIMx->SMCR |= (TIM_SMCR_TS_0 | TIM_SMCR_TS_2); //Selecting filtered Timer input 1 as trigger input
 	TIMx->SMCR |= TIM_SMCR_SMS_2; //configure slave mode controller in reset mode
