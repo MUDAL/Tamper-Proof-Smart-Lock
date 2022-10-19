@@ -38,6 +38,8 @@ void Sensor_Init(void)
 
 uint32_t Sensor_GetDistance(void)
 {
-	uint32_t dist = (float)TIM_GetDutyCycle(TIM3) * IC_TIMER_PRESCALER / (58 * SYS_CLK_FREQ_MHZ);
+	static uint32_t duty;
+	TIM_GetDutyCycle(TIM3,&duty);
+	uint32_t dist = (float)duty * IC_TIMER_PRESCALER / (58 * SYS_CLK_FREQ_MHZ);
 	return dist;
 }

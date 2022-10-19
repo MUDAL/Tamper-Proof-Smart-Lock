@@ -35,13 +35,12 @@ void TIM_InputCaptureInit(TIM_TypeDef* TIMx,uint16_t prescale,uint16_t reload)
 	TIMx->CR1 |= TIM_CR1_CEN; //enable TIMx counter.
 }
 
-uint32_t TIM_GetDutyCycle(TIM_TypeDef* TIMx)
+void TIM_GetDutyCycle(TIM_TypeDef* TIMx,uint32_t* pDuty)
 {
 	if((TIMx->SR & TIM_SR_CC2IF) == TIM_SR_CC2IF)
 	{
-		return TIMx->CCR2;
+		*pDuty = TIMx->CCR2;
 	}
-	return 0;
 }
 
 
