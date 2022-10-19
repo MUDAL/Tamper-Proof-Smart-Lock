@@ -19,6 +19,6 @@
 ## Things to do  
 1. Test the entire application with the new modification (replacing IR sensor with Ultrasonic sensor).  
 2. The aim of the test is to ensure that the previous functionalities and timing/performance are not altered.  
-3. If there's an issue, try adjusting the Blocking time of the ``TrigTask`` in the ``sensor.c`` file.  
+
 
 
