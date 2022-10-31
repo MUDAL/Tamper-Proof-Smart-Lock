@@ -3005,7 +3005,7 @@
     (property "Reference" "R1" (id 0) (at 22.225 95.885 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "5.5k" (id 1) (at 22.225 98.425 0)
+    (property "Value" "10k" (id 1) (at 22.225 98.425 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Footprint" "" (id 2) (at 25.527 94.615 90)
@@ -3734,7 +3734,7 @@
       (reference "Q2") (unit 1) (value "BC547") (footprint "Package_TO_SOT_THT:TO-92_Inline")
     )
     (path "/5591601a-0208-417f-b6e4-bd68e0c1316e"
-      (reference "R1") (unit 1) (value "5.5k") (footprint "")
+      (reference "R1") (unit 1) (value "10k") (footprint "")
     )
     (path "/91b64d2e-f7fe-475a-ae8e-f382e512b883"
       (reference "R2") (unit 1) (value "5.5k") (footprint "")
