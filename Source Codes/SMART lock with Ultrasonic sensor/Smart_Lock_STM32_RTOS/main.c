@@ -152,14 +152,32 @@ void SendSecurityReportToApp(char* reportName,ds3231_t* timeOfReport)
 	BT_Transmit(reportName);
 	for(uint8_t i = 0; i < NUM_OF_SECURITY_REPORTS; i++)
 	{
-		char hour[] = "00";
-		char minute[] = "00";
-		//convert time of report (hour and min) to string then transmit
+		char hour[3] = {0};
+		char minute[3] = {0};
+		//convert time of report (hour and min) to string then transmit to the app
 		IntegerToString(timeOfReport[i].hours,hour);
-		IntegerToString(timeOfReport[i].minutes,minute);
-		BT_Transmit(hour);
+		if(timeOfReport[i].hours < 10)
+		{
+			BT_Transmit("0");
+			BT_Transmit(hour);
+		}
+		else
+		{
+			BT_Transmit(hour);
+		}
+		
 		BT_Transmit(":");
-		BT_Transmit(minute);
+		
+		IntegerToString(timeOfReport[i].minutes,minute);
+		if(timeOfReport[i].minutes < 10)
+		{
+			BT_Transmit("0");
+			BT_Transmit(minute);
+		}
+		else
+		{
+			BT_Transmit(minute);
+		}
 		BT_Transmit(" "); //to separate the times
 	}
 }
