@@ -16,9 +16,12 @@
 11  |   Buzzer      |   PA8   |     
 12  |   DS3231  RTC   |   I2C1 (PB6, PB7)  |   
 
-## Things to do  
-1. Test the entire application with the new modification (replacing IR sensor with Ultrasonic sensor).  
-2. The aim of the test is to ensure that the previous functionalities and timing/performance are not altered.  
+## Important SIM800L points  
+1. The module should be powered with sufficient voltage (4.1-4.4v).  
+2. It should also be powered with a supply that can source 2A or more.  
+3. The wires connecting the power pins of the module to the supply should be as short as possible in order to minimize resistance. This helps in preventing unwanted resets as the resistance introduced by longer wires could limit the amount of current the module would draw.  
+
+
 
 
 
