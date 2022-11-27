@@ -91,8 +91,8 @@ void HandleFingerprint(void)
 	//Fingerprint detection
 	if(!invalidPrint)
 	{
-		uint8_t f_status = FindFingerprint();
-		switch(f_status)
+		uint8_t fingerprintStatus = FindFingerprint();
+		switch(fingerprintStatus)
 		{
 			case FINGERPRINT_OK:
 				numOfInvalidPrints = 0;
@@ -298,7 +298,7 @@ void Task3(void* pvParameters)
 			OutputDev_Write(LOCK,false); //close door
 		}
 		//Tamper detection
-		if(!deviceTampered && Sensor_GetDistance() > 13)
+		if(!deviceTampered && Sensor_GetDistance() > 6)
 		{
 			StoreSecurityTimestamp(TAMPER_DETECTION_EVENT);
 			SetIntertaskData(&deviceTampered,true);

@@ -211,22 +211,22 @@ void StoreFingerprint(void)
 
 uint8_t FindFingerprint(void)
 {
-  uint8_t f_status = Fingerprint_GetImage();
-  if(f_status != FINGERPRINT_OK)
+  uint8_t fingerprintStatus = Fingerprint_GetImage();
+  if(fingerprintStatus != FINGERPRINT_OK)
   {
-    return f_status;
+    return fingerprintStatus;
   }
-  f_status = Fingerprint_Image2Tz(1);
-  if(f_status != FINGERPRINT_OK) 
+  fingerprintStatus = Fingerprint_Image2Tz(1);
+  if(fingerprintStatus != FINGERPRINT_OK) 
   { 
-    return f_status;
+    return fingerprintStatus;
   }
-  f_status = Fingerprint_FingerFastSearch();
-  if(f_status != FINGERPRINT_OK)  
+  fingerprintStatus = Fingerprint_FingerFastSearch();
+  if(fingerprintStatus != FINGERPRINT_OK)  
   {
-    return f_status;
+    return fingerprintStatus;
   }
-  return f_status;	
+  return fingerprintStatus;	
 }
 
 bool HasTimedOut(uint8_t* tCount,uint8_t timeout)

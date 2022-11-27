@@ -36,6 +36,9 @@ void Sensor_Init(void)
 	xTimerStart(softwareTimer,0);
 }
 
+/**
+	* @brief Gets distance in centimeters.  
+*/
 uint32_t Sensor_GetDistance(void)
 {
 	static uint32_t duty;

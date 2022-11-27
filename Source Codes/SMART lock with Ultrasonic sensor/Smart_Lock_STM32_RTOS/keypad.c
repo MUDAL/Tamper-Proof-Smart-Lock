@@ -5,7 +5,7 @@
 #include "keypad.h"
 
 //2D matrix containing the previous state of all keys on the 4x4 matrix.
-static bool prevPressed[4][4] = {0};
+static bool prevPressed[4][4];
 
 const char keypadMatrix[4][4] =
 {{'1','2','3','A'},
