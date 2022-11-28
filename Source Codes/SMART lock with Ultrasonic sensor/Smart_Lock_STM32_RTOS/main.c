@@ -366,9 +366,13 @@ void TimerCallback(TimerHandle_t xTimer)
 	{
 		tLock = 0; //reset 'tLock' if door is closed by other means
 	}
-	if(OutputDev_Read(BUZZER) && HasTimedOut(&tBuzzer,DEVICE_TIMEOUT))
+	
+	if(OutputDev_Read(BUZZER))
 	{
-		OutputDev_Write(BUZZER,false);
+		if(HasTimedOut(&tBuzzer,DEVICE_TIMEOUT))
+		{
+			OutputDev_Write(BUZZER,false);
+		}
 	}
 	//Handling timeouts due to shared data between tasks
 	IntertaskTimeout(&invalidInput,&tKeypadInput,DEVICE_TIMEOUT);
