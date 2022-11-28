@@ -251,9 +251,12 @@ void IntertaskTimeout(bool* pSharedData,
 											uint8_t* tCount,
 											uint8_t timeout)
 {
-	if(*pSharedData && HasTimedOut(tCount,timeout))
+	if(*pSharedData)
 	{
-		SetIntertaskData(pSharedData,false);
+		if(HasTimedOut(tCount,timeout))
+		{
+			SetIntertaskData(pSharedData,false);
+		}
 	}
 }
 

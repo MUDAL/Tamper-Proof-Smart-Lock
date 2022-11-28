@@ -33,7 +33,6 @@ typedef enum
 #define END_OF_REPORT							"\r"
 //Timeouts (in seconds)
 #define DEVICE_TIMEOUT						10
-#define TAMPER_TIMEOUT						25
 
 extern void Display(char* msg);
 extern void GetKeypadData(char* keyBuffer);

@@ -373,6 +373,6 @@ void TimerCallback(TimerHandle_t xTimer)
 	//Handling timeouts due to shared data between tasks
 	IntertaskTimeout(&invalidInput,&tKeypadInput,DEVICE_TIMEOUT);
 	IntertaskTimeout(&invalidPrint,&tPrint,DEVICE_TIMEOUT);
-	IntertaskTimeout(&deviceTampered,&tDeviceTamper,TAMPER_TIMEOUT);
+	IntertaskTimeout(&deviceTampered,&tDeviceTamper,DEVICE_TIMEOUT);
 	IntertaskTimeout(&invalidBluetoothPswd,&tBluetooth,DEVICE_TIMEOUT);	
 }
