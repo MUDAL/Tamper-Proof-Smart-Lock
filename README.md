@@ -41,9 +41,15 @@ to view the source code. The ``APK`` file is also present in the same folder as 
 in order to minimize resistance. This helps in preventing unwanted resets as the resistance introduced    
 by longer wires could limit the amount of current the module would draw.   
 
+## Images  
 
+![Finished work front view](https://user-images.githubusercontent.com/46250887/205495787-6a811678-a764-4d76-84f7-8808ee10ea26.jpg)  
 
+![Finished work](https://user-images.githubusercontent.com/46250887/205495841-9cb31fff-6728-400c-9580-214edff1c8ab.jpg)  
 
+![Finished work side view 2](https://user-images.githubusercontent.com/46250887/205496066-7b8d5151-9c68-45fd-b9ab-18db715630c9.jpg)  
+
+![Finished work side view 1](https://user-images.githubusercontent.com/46250887/205496075-09c605d2-d992-4f6d-afba-44d772edaa56.jpg)  
 
 
 
