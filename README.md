@@ -47,9 +47,9 @@ by longer wires could limit the amount of current the module would draw.
 
 ![Finished work](https://user-images.githubusercontent.com/46250887/205495841-9cb31fff-6728-400c-9580-214edff1c8ab.jpg)  
 
+![Finished work side view 2](https://user-images.githubusercontent.com/46250887/205496066-7b8d5151-9c68-45fd-b9ab-18db715630c9.jpg)  
 
-
-
+![Finished work side view 1](https://user-images.githubusercontent.com/46250887/205496075-09c605d2-d992-4f6d-afba-44d772edaa56.jpg)  
 
 
 
