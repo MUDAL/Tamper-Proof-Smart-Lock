@@ -13,7 +13,7 @@ A smart lock with the following features:
 a. To add/remove fingerprints  
 b. To add phone number   
 c. To change password   
-5. Temporary timekeeping intruder and   
+5. Temporary timekeeping of intruder and   
 tamper detection occurrences.    
 
 ## Mobile app  
