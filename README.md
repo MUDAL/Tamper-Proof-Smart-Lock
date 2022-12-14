@@ -8,11 +8,14 @@ A smart lock with the following features:
 - Keypad  
 - Mobile app  
 2. Tamper detection via ultrasonic sensor  
+
 3. Intruder alert via SMS  
+
 4. HMI (Keypad + OLED):    
-a. To add/remove fingerprints  
-b. To add phone number   
-c. To change password   
+- To add/remove fingerprints  
+- To add phone number   
+- To change password   
+
 5. Temporary timekeeping of intruder and   
 tamper detection occurrences.    
 
