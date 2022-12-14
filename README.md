@@ -9,8 +9,12 @@ A smart lock with the following features:
 - Mobile app  
 2. Tamper detection via ultrasonic sensor  
 3. Intruder alert via SMS  
-4. Data logging and retrieval from an EEPROM  
-5. Timestamping (via RTC) attempts to open/close the door.  
+4. HMI (Keypad + OLED):    
+a. To add/remove fingerprints  
+b. To add phone number   
+c. To change password   
+5. Temporary timekeeping intruder and   
+tamper detection occurrences.    
 
 ## Mobile app  
 The app was developed using ``MIT App Inventor``. The ``aia`` file can be found in  
