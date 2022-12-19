@@ -32,7 +32,7 @@ typedef enum
 #define NUM_OF_SECURITY_REPORTS		5 //Max number of security reports
 #define END_OF_REPORT							"\r"
 //Timeouts (in seconds)
-#define DEVICE_TIMEOUT						10
+#define DEVICE_TIMEOUT						8
 
 extern void Display(char* msg);
 extern void GetKeypadData(char* keyBuffer);

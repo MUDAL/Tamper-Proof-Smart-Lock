@@ -2,8 +2,8 @@
 
 void Display(char* msg)
 {
-	uint8_t xPos = 2;
-	uint8_t yPos = 10;
+	const uint8_t xPos = 2;
+	const uint8_t yPos = 10;
 	uint8_t y = yPos;
 	
 	OLED_ClearScreen();
@@ -234,7 +234,7 @@ bool HasTimedOut(uint8_t* tCount,uint8_t timeout)
 	//*tCount = pointer to variable that will be incremented every second.
 	//if *tCount = timeout, then a timeout for a certain event has occured.
 	(*tCount)++;
-	if(*tCount == timeout)
+	if(*tCount >= timeout)
 	{
 		*tCount = 0;
 		return true;

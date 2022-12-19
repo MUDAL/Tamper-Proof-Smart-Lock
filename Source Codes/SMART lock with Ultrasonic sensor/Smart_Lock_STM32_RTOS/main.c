@@ -13,6 +13,7 @@ typedef enum
 	TAMPER_DETECTION_EVENT = 0,
 	FAILED_ACCESS_EVENT
 }securityEvent_t;
+
 //Shared variable(s) 
 bool invalidInput = false;
 bool invalidPrint = false;
@@ -20,6 +21,7 @@ bool deviceTampered = false;
 bool invalidBluetoothPswd = false;
 static ds3231_t tamperDetectionTimes[NUM_OF_SECURITY_REPORTS];
 static ds3231_t failedAccessTimes[NUM_OF_SECURITY_REPORTS];
+
 //Function(s)
 static void HandleHMI(void);
 static void HandleFingerprint(void);
@@ -27,25 +29,23 @@ static void StoreSecurityTimestamp(securityEvent_t timestamp);
 static void SendSecurityReportToApp(char* reportName,ds3231_t* timeOfReport);
 static void HandleRxBluetoothData(btStatus_t bluetoothStatus,
 																	uint8_t* btRxBuffer,char* eepromPswd);
-//Task(s)
-void Task1(void* pvParameters);
-void Task2(void* pvParameters);
-void Task3(void* pvParameters);
-void Task4(void* pvParameters);
-//Timer callback(s)
+//Tasks and callbacks
+void SetupTask(void* pvParameters);
+void HMI_FingerprintTask(void* pvParameters);
+void Button_TamperTask(void* pvParameters);
+void BluetoothTask(void* pvParameters);
 void TimerCallback(TimerHandle_t xTimer);
-//Main 
+ 
 int main(void)
 {
 	System_Config();
-	xTaskCreate(Task1,"",100,NULL,1,NULL); //Initializations
+	xTaskCreate(SetupTask,"",100,NULL,1,NULL); //Initializations
 	vTaskStartScheduler();
 	while(1)
 	{
 	}
 }
 
-//Function definitions
 void HandleHMI(void)
 {
 	//HMI (Keypad + OLED)
@@ -88,7 +88,6 @@ void HandleHMI(void)
 void HandleFingerprint(void)
 {
 	static uint8_t numOfInvalidPrints;
-	//Fingerprint detection
 	if(!invalidPrint)
 	{
 		uint8_t fingerprintStatus = FindFingerprint();
@@ -235,12 +234,11 @@ void HandleRxBluetoothData(btStatus_t bluetoothStatus,
 	}	
 }
 
-//Tasks
 /**
 	* @brief initializes all modules required by the application
 	* This task is deleted after all required modules have been initialized
 */
-void Task1(void* pvParameters)
+void SetupTask(void* pvParameters)
 {
 	Keypad_Init();
 	Button_Init();
@@ -252,9 +250,9 @@ void Task1(void* pvParameters)
 	OLED_ClearScreen();	
 	Fingerprint_Init();
 	//Task(s) init
-	xTaskCreate(Task2,"",300,NULL,1,NULL); //HMI and Fingerprint
-	xTaskCreate(Task3,"",100,NULL,1,NULL); //Buttons, sensor, tamper detection
-	xTaskCreate(Task4,"",300,NULL,1,NULL); //Bluetooth
+	xTaskCreate(HMI_FingerprintTask,"",300,NULL,1,NULL); //HMI and Fingerprint
+	xTaskCreate(Button_TamperTask,"",100,NULL,1,NULL); //Buttons, sensor, tamper detection
+	xTaskCreate(BluetoothTask,"",300,NULL,1,NULL); //Bluetooth
 	//Software timer init
 	TimerHandle_t softwareTimer;
 	softwareTimer = xTimerCreate("",pdMS_TO_TICKS(1000),pdTRUE,0,TimerCallback);
@@ -268,7 +266,7 @@ void Task1(void* pvParameters)
 /**
 	* @brief handles the HMI (Keypad and OLED) as well as fingerprint detection
 */
-void Task2(void* pvParameters)
+void HMI_FingerprintTask(void* pvParameters)
 {
 	while(1)
 	{
@@ -279,15 +277,13 @@ void Task2(void* pvParameters)
 
 /**
 	* @brief monitors button presses and tamper detection
-	* Runs every 10ms
 */
-void Task3(void* pvParameters)
+void Button_TamperTask(void* pvParameters)
 {
 	bool indoorPrevState = false;
 	bool outdoorPrevState = false;
 	while(1)
 	{
-		vTaskDelay(pdMS_TO_TICKS(10));
 		if(Button_IsPressed(INDOOR,&indoorPrevState))
 		{ //Open door if closed, close if open
 			bool lockState = OutputDev_Read(LOCK);
@@ -304,20 +300,19 @@ void Task3(void* pvParameters)
 			SetIntertaskData(&deviceTampered,true);
 			IntruderAlert("Tamper detected!!!!!");
 		}
+		vTaskDelay(pdMS_TO_TICKS(10));
 	}
 }
 
 /**
 	* @brief handles bluetooth communication between the smart lock and the app
-	* Runs every 200ms
 */
-void Task4(void* pvParameters)
+void BluetoothTask(void* pvParameters)
 {
 	uint8_t btRxBuffer[BUFFER_SIZE] = {0};
 	BT_RxBufferInit(btRxBuffer,BUFFER_SIZE);
 	while(1)
 	{
-		vTaskDelay(pdMS_TO_TICKS(200));
 		if(!invalidBluetoothPswd)
 		{
 			char eepromPswd[BUFFER_SIZE] = {0};
@@ -338,6 +333,7 @@ void Task4(void* pvParameters)
 				BT_RxBufferInit(btRxBuffer,BUFFER_SIZE);
 			}
 		}
+		vTaskDelay(pdMS_TO_TICKS(200));
 	}
 }
 
