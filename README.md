@@ -47,15 +47,16 @@ to view the source code. The ``APK`` file is also present in the same folder as 
 in order to minimize resistance. This helps in preventing unwanted resets as the resistance introduced    
 by longer wires could limit the amount of current the module would draw.   
 
-## Images  
+## Images of prototype  
 
-![Finished work front view](https://user-images.githubusercontent.com/46250887/205495787-6a811678-a764-4d76-84f7-8808ee10ea26.jpg)  
+![20230103_102348](https://user-images.githubusercontent.com/46250887/210335882-975661a0-fde1-4a5d-8249-8ec0525b2334.jpg)  
 
-![Finished work](https://user-images.githubusercontent.com/46250887/205495841-9cb31fff-6728-400c-9580-214edff1c8ab.jpg)  
+![20230103_102401](https://user-images.githubusercontent.com/46250887/210335912-574271c0-df18-410e-85a2-cb47c12eabd1.jpg)  
 
-![Finished work side view 2](https://user-images.githubusercontent.com/46250887/205496066-7b8d5151-9c68-45fd-b9ab-18db715630c9.jpg)  
+![20230103_102541](https://user-images.githubusercontent.com/46250887/210335947-0569a6c0-065f-4610-aa5f-1f1278c975b3.jpg)  
 
-![Finished work side view 1](https://user-images.githubusercontent.com/46250887/205496075-09c605d2-d992-4f6d-afba-44d772edaa56.jpg)  
+![20230103_102533](https://user-images.githubusercontent.com/46250887/210335978-96057d95-0fb2-41ab-ae00-ca529f5605fd.jpg)  
+
 
 
 
