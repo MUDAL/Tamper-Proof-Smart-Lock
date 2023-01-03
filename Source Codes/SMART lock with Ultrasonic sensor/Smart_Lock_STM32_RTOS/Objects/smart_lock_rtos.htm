@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\smart_lock_rtos.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\smart_lock_rtos.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Mon Dec 19 17:18:19 2022
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Tue Jan 03 19:39:37 2023
 <BR><P>
 <H3>Maximum Stack Usage =        272 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -630,7 +630,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[3c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Button_TamperTask
 </UL>
 
-<P><STRONG><a name="[3c]"></a>Button_TamperTask</STRONG> (Thumb, 100 bytes, Stack size 16 bytes, main.o(i.Button_TamperTask))
+<P><STRONG><a name="[3c]"></a>Button_TamperTask</STRONG> (Thumb, 108 bytes, Stack size 16 bytes, main.o(i.Button_TamperTask))
 <BR><BR>[Stack]<UL><LI>Max Depth = 144<LI>Call Chain = Button_TamperTask &rArr; IntruderAlert &rArr; EEPROM_GetData &rArr; EEPROM_ReadPage &rArr; I2C_ReadMultiByte &rArr; I2C_ReadByte
 </UL>
 <BR>[Calls]<UL><LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
@@ -1093,6 +1093,7 @@ Global Symbols
 <LI><a href="#[3e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TimerCallback
 <LI><a href="#[3c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Button_TamperTask
 <LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HandleRxBluetoothData
+<LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HandleHMI
 <LI><a href="#[9a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HandleFingerprint
 </UL>
 
@@ -1712,7 +1713,7 @@ Global Symbols
 <H3>
 Local Symbols
 </H3>
-<P><STRONG><a name="[9a]"></a>HandleFingerprint</STRONG> (Thumb, 134 bytes, Stack size 16 bytes, main.o(i.HandleFingerprint))
+<P><STRONG><a name="[9a]"></a>HandleFingerprint</STRONG> (Thumb, 142 bytes, Stack size 16 bytes, main.o(i.HandleFingerprint))
 <BR><BR>[Stack]<UL><LI>Max Depth = 144<LI>Call Chain = HandleFingerprint &rArr; IntruderAlert &rArr; EEPROM_GetData &rArr; EEPROM_ReadPage &rArr; I2C_ReadMultiByte &rArr; I2C_ReadByte
 </UL>
 <BR>[Calls]<UL><LI><a href="#[75]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SetIntertaskData
@@ -1726,12 +1727,13 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[3b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HMI_FingerprintTask
 </UL>
 
-<P><STRONG><a name="[99]"></a>HandleHMI</STRONG> (Thumb, 156 bytes, Stack size 56 bytes, main.o(i.HandleHMI))
+<P><STRONG><a name="[99]"></a>HandleHMI</STRONG> (Thumb, 164 bytes, Stack size 56 bytes, main.o(i.HandleHMI))
 <BR><BR>[Stack]<UL><LI>Max Depth = 272<LI>Call Chain = HandleHMI &rArr; CheckKey &rArr; InputNewPassword &rArr; RetryPassword &rArr; GetKeypadData &rArr; Keypad_GetChar &rArr; IsDebounced &rArr; vTaskDelay &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
 <LI><a href="#[75]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SetIntertaskData
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RetryPassword
+<LI><a href="#[72]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OutputDev_Write
 <LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ClearScreen
 <LI><a href="#[79]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Keypad_GetChar
 <LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IntruderAlert
@@ -1746,7 +1748,7 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[3b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HMI_FingerprintTask
 </UL>
 
-<P><STRONG><a name="[6b]"></a>HandleRxBluetoothData</STRONG> (Thumb, 216 bytes, Stack size 24 bytes, main.o(i.HandleRxBluetoothData))
+<P><STRONG><a name="[6b]"></a>HandleRxBluetoothData</STRONG> (Thumb, 224 bytes, Stack size 24 bytes, main.o(i.HandleRxBluetoothData))
 <BR><BR>[Stack]<UL><LI>Max Depth = 152<LI>Call Chain = HandleRxBluetoothData &rArr; IntruderAlert &rArr; EEPROM_GetData &rArr; EEPROM_ReadPage &rArr; I2C_ReadMultiByte &rArr; I2C_ReadByte
 </UL>
 <BR>[Calls]<UL><LI><a href="#[75]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SetIntertaskData

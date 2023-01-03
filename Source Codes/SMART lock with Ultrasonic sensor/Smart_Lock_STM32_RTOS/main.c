@@ -72,6 +72,7 @@ void HandleHMI(void)
 						CheckKey(key);
 						break;
 					case PASSWORD_INCORRECT:
+						OutputDev_Write(LOCK,false);
 						StoreSecurityTimestamp(FAILED_ACCESS_EVENT);
 						SetIntertaskData(&invalidInput,true);
 						Display("Incorrect");
@@ -109,6 +110,7 @@ void HandleFingerprint(void)
 				}
 				else
 				{
+					OutputDev_Write(LOCK,false);
 					StoreSecurityTimestamp(FAILED_ACCESS_EVENT);
 					SetIntertaskData(&invalidPrint,true);
 					Display("Invalid\nfingerprint"); 
@@ -226,6 +228,7 @@ void HandleRxBluetoothData(btStatus_t bluetoothStatus,
 		wrongAttempts++;
 		if(wrongAttempts == maxNumOfWrongAttempts)
 		{
+			OutputDev_Write(LOCK,false);
 			StoreSecurityTimestamp(FAILED_ACCESS_EVENT);
 			IntruderAlert("Failed attempt via Bluetooth");
 			SetIntertaskData(&invalidBluetoothPswd,true);
@@ -294,8 +297,9 @@ void Button_TamperTask(void* pvParameters)
 			OutputDev_Write(LOCK,false); //close door
 		}
 		//Tamper detection
-		if(!deviceTampered && Sensor_GetDistance() > 6)
+		if(!deviceTampered && (Sensor_GetDistance() > 6))
 		{
+			OutputDev_Write(LOCK,false);
 			StoreSecurityTimestamp(TAMPER_DETECTION_EVENT);
 			SetIntertaskData(&deviceTampered,true);
 			IntruderAlert("Tamper detected!!!!!");
