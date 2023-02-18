@@ -47,6 +47,9 @@ to view the source code. The ``APK`` file is also present in the same folder as 
 in order to minimize resistance. This helps in preventing unwanted resets as the resistance introduced    
 by longer wires could limit the amount of current the module would draw.   
 
+## Block diagram  
+![block_diagram drawio](https://user-images.githubusercontent.com/46250887/219887347-b687955b-d9e1-4335-9081-6a45ee540765.png)  
+
 ## Images of prototype  
 
 ![20230214_100150](https://user-images.githubusercontent.com/46250887/218695341-854c8ac2-5f41-40c8-8c51-136155ccb4ab.jpg)
