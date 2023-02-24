@@ -262,7 +262,7 @@ void IntertaskTimeout(bool* pSharedData,
 
 void IntegerToString(uint32_t integer, char* pBuffer)
 {
-	if (integer == 0)
+	if(integer == 0)
 	{//Edge case  
 		pBuffer[0] = '0';
 		return;
@@ -275,7 +275,7 @@ void IntegerToString(uint32_t integer, char* pBuffer)
 		copyOfInt /= 10;
 		noOfDigits++;
 	}
-	while (integer > 0)
+	while(integer > 0)
 	{
 		pBuffer[noOfDigits - 1] = '0' + (integer % 10);
 		integer /= 10;
