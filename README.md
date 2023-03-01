@@ -16,7 +16,7 @@ A smart lock with the following features:
 - To add phone number   
 - To change password   
 
-5. Temporarily timekeeping occurrences of intruder and tamper detection.       
+5. Timekeeping occurrences of intruder and tamper detection.       
 
 ## Mobile app  
 The app was developed using ``MIT App Inventor``. The ``aia`` file can be found in  
