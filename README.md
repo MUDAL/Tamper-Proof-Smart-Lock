@@ -24,6 +24,9 @@ interface (keypad + OLED) to aid man-machine communication.
 
 5. Timekeeping occurrences of intruder and tamper detection using a Real-Time Clock.         
 
+## Block diagram  
+![block_diagram drawio](https://user-images.githubusercontent.com/46250887/219887347-b687955b-d9e1-4335-9081-6a45ee540765.png)   
+
 ## Software  
 1. Keil uVision 5 for programming the STM32 microcontroller.  
 2. MIT App Inventor for mobile application development.   
@@ -65,9 +68,6 @@ to control devices like the Fingerprint module, OLED, GSM module etc. without th
 3. The wires connecting the power pins of the module to the supply should be as short as possible   
 in order to minimize resistance. This helps in preventing unwanted resets as the resistance introduced    
 by longer wires could limit the amount of current the module would draw.   
-
-## Block diagram  
-![block_diagram drawio](https://user-images.githubusercontent.com/46250887/219887347-b687955b-d9e1-4335-9081-6a45ee540765.png)  
 
 ## Images of prototype  
 
