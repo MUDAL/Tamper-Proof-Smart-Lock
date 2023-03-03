@@ -1,14 +1,13 @@
 # Tamper-proof smart door lock  
 
 ## Description  
-
 The Tamper-Proof Smart Lock is a functional prototype designed and developed for a school project.   
 It is a secure, tamper-proof locking system that can be accessed using multiple options for access control,   
 including fingerprint, keypad, mobile application, and tactile buttons. The system also features tamper   
 detection using an ultrasonic sensor, real-time responses to security breaches via SMS alerts, and a user   
 interface (keypad + OLED) to aid man-machine communication.  
 
-A smart lock with the following features:  
+## Features  
 1. Access control via:  
 - Fingerprint sensor  
 - Indoor and outdoor buttons  
