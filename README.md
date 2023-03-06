@@ -1,7 +1,13 @@
 # Tamper-proof smart door lock  
 
 ## Description  
-A smart lock with the following features:  
+The Tamper-Proof Smart Lock is a functional prototype designed and developed for a school project.   
+It is a secure, tamper-proof locking system that can be accessed using multiple options for access control,   
+including fingerprint, keypad, mobile application, and tactile buttons. The system also features tamper   
+detection using an ultrasonic sensor, real-time responses to security breaches via SMS alerts, and a user   
+interface (keypad + OLED) to aid man-machine communication.  
+
+## Features  
 1. Access control via:  
 - Fingerprint sensor  
 - Indoor and outdoor buttons  
@@ -16,15 +22,31 @@ A smart lock with the following features:
 - To add phone number   
 - To change password   
 
-5. Timekeeping occurrences of intruder and tamper detection.       
+5. Timekeeping occurrences of intruder and tamper detection using a Real-Time Clock.         
 
-## Mobile app  
+## Block diagram  
+![block_diagram drawio](https://user-images.githubusercontent.com/46250887/219887347-b687955b-d9e1-4335-9081-6a45ee540765.png)   
+
+## Software  
+1. Keil uVision 5 for programming the STM32 microcontroller.  
+2. MIT App Inventor for mobile application development.   
+3. FreeRTOS (for concurrent execution of tasks).  
+
+## Mobile application  
 The app was developed using ``MIT App Inventor``. The ``aia`` file can be found in  
 the ``App files`` folder of this repo. This file can be opened in MIT App Inventor  
 to view the source code. The ``APK`` file is also present in the same folder as the  
-``aia`` file.  
+``aia`` file. The app communicates with the smart lock via ``Bluetooth``.
 
-## Pinout
+## Software architecture  
+The software for the Tamper-Proof Smart Lock was designed using a layered architecture consisting of:   
+
+1. ``Device drivers`` (using CMSIS): UART, I2C, GPIO, DMA, SysTick, Timer, RCC.  
+2. ``Libraries``: These abstract the device drivers and provide an interface (function calls) for the main application  
+to control devices like the Fingerprint module, OLED, GSM module etc. without the need to know about their hardware configurations.  
+3. ``Main application``: A mix of FreeRTOS and function calls from the ``Libraries`` layer.      
+
+## Hardware / Pinout
 |  N   |  Component     | STM32                            |  
 | :------: | :------: | :------: |  
 1   |   HC05 Bluetooth Module     |  USART3 (PB10, PB11)                           |   
@@ -46,9 +68,6 @@ to view the source code. The ``APK`` file is also present in the same folder as 
 3. The wires connecting the power pins of the module to the supply should be as short as possible   
 in order to minimize resistance. This helps in preventing unwanted resets as the resistance introduced    
 by longer wires could limit the amount of current the module would draw.   
-
-## Block diagram  
-![block_diagram drawio](https://user-images.githubusercontent.com/46250887/219887347-b687955b-d9e1-4335-9081-6a45ee540765.png)  
 
 ## Images of prototype  
 
