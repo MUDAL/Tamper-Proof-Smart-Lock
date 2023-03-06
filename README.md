@@ -36,7 +36,8 @@ interface (keypad + OLED) to aid man-machine communication.
 The app was developed using ``MIT App Inventor``. The ``aia`` file can be found in  
 the ``App files`` folder of this repo. This file can be opened in MIT App Inventor  
 to view the source code. The ``APK`` file is also present in the same folder as the  
-``aia`` file. The app communicates with the smart lock via ``Bluetooth``.
+``aia`` file. The app communicates with the smart lock via ``Bluetooth``.  
+![smart_lock_app](https://user-images.githubusercontent.com/46250887/223219502-15954848-4aee-4515-b2ed-a8cfea6cb61c.jpg)  
 
 ## Software architecture  
 The software for the Tamper-Proof Smart Lock was designed using a layered architecture consisting of:   
