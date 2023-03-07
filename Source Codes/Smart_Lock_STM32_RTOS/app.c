@@ -16,7 +16,7 @@ void Display(char* msg)
 			y += 10; //+10 pixels for newline 
 			OLED_SetCursor(xPos,y);
 		}
-		OLED_WriteChar(msg[i],White);
+		OLED_WriteChar(msg[i],WHITE);
 		i++;
 	}
 	OLED_UpdateScreen();

@@ -10,14 +10,15 @@
 #ifndef OLED_H_
 #define OLED_H_
 
-#define OLED_HEIGHT          64 // OLED OLED height in pixels
+#define OLED_HEIGHT          64 // OLED height in pixels
 #define OLED_WIDTH           132 // OLED width in pixels
 #define OLED_BUFFER_SIZE   OLED_HEIGHT * OLED_WIDTH / 8
 
 // Enumeration for screen colors
-typedef enum {
-    Black = 0x00, // Black color, no pixel
-    White = 0x01  // Pixel is set. Color depends on OLED
+typedef enum 
+{
+	BLACK = 0x00, // Black color, no pixel
+	WHITE = 0x01  // Pixel is set. Color depends on OLED
 } OLED_COLOR;
 
 extern void OLED_Init(void);

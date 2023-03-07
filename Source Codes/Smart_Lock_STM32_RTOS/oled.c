@@ -129,7 +129,7 @@ static void OLED_Fill(OLED_COLOR color)
 {
 	for(uint32_t i = 0; i < sizeof(screenBuffer); i++) 
 	{
-		screenBuffer[i] = (color == Black) ? 0x00 : 0xFF;
+		screenBuffer[i] = (color == BLACK) ? 0x00 : 0xFF;
 	}
 }
 
@@ -165,7 +165,7 @@ void OLED_Init(void)
 	OLED_WriteCommand(0x8D);   // Set DC-DC enable
 	OLED_WriteCommand(0x14);   //
 	OLED_WriteCommand(0xAF);   // Turn on OLED panel
-	OLED_Fill(Black); // Clear screen
+	OLED_Fill(BLACK); // Clear screen
 	OLED_UpdateScreen(); // Flush buffer to screen
 }
 
@@ -194,7 +194,7 @@ void OLED_DrawPixel(uint8_t x, uint8_t y, OLED_COLOR color)
 		return; // Don't write outside the buffer
 	}
 	// Draw in the right color
-	if(color == White) 
+	if(color == WHITE) 
 	{
 		screenBuffer[x + (y / 8) * OLED_WIDTH] |= 1 << (y % 8);
 	} 

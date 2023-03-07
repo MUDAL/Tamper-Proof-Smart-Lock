@@ -25,7 +25,7 @@ I (.\FreeRTOS\source\include\list.h)(0x5FD90663)
 I (.\FreeRTOS\source\include\timers.h)(0x5FD90663)
 I (system.h)(0x6253F27F)
 I (keypad.h)(0x62A97206)
-I (oled.h)(0x62484A3B)
+I (oled.h)(0x64068B99)
 I (bluetooth.h)(0x6277B0B6)
 I (button.h)(0x62559FF7)
 I (output_device.h)(0x6257AAE5)
@@ -34,7 +34,7 @@ I (eeprom.h)(0x6249EF14)
 I (gsm.h)(0x624869F3)
 I (rtc.h)(0x62484A3C)
 I (sensor.h)(0x634EE2D4)
-F (.\app.c)(0x63A086E3)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I . -I .\FreeRTOS\source\include -I .\FreeRTOS\source\portable\RVDS\ARM_CM3-I.\RTE\Device\STM32F103C8-I.\RTE\_stm32f103-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_MD -D_RTE_-o .\objects\app.o --omf_browse .\objects\app.crf --depend .\objects\app.d)
+F (.\app.c)(0x64068B99)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I . -I .\FreeRTOS\source\include -I .\FreeRTOS\source\portable\RVDS\ARM_CM3-I.\RTE\Device\STM32F103C8-I.\RTE\_stm32f103-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_MD -D_RTE_-o .\objects\app.o --omf_browse .\objects\app.crf --depend .\objects\app.d)
 I (app.h)(0x63A077C2)
 I (C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include\stm32f10x.h)(0x61ADDBCE)
 I (.\RTE\_stm32f103\RTE_Components.h)(0x6253EFE2)
@@ -59,7 +59,7 @@ I (.\FreeRTOS\source\include\list.h)(0x5FD90663)
 I (.\FreeRTOS\source\include\timers.h)(0x5FD90663)
 I (system.h)(0x6253F27F)
 I (keypad.h)(0x62A97206)
-I (oled.h)(0x62484A3B)
+I (oled.h)(0x64068B99)
 I (bluetooth.h)(0x6277B0B6)
 I (button.h)(0x62559FF7)
 I (output_device.h)(0x6257AAE5)
@@ -195,7 +195,7 @@ I (.\FreeRTOS\source\include\task.h)(0x5FD90663)
 I (.\FreeRTOS\source\include\list.h)(0x5FD90663)
 I (keypad.h)(0x62A97206)
 F (.\keypad.h)(0x62A97206)()
-F (.\oled.c)(0x6255ED68)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I . -I .\FreeRTOS\source\include -I .\FreeRTOS\source\portable\RVDS\ARM_CM3-I.\RTE\Device\STM32F103C8-I.\RTE\_stm32f103-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_MD -D_RTE_-o .\objects\oled.o --omf_browse .\objects\oled.crf --depend .\objects\oled.d)
+F (.\oled.c)(0x64068B99)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I . -I .\FreeRTOS\source\include -I .\FreeRTOS\source\portable\RVDS\ARM_CM3-I.\RTE\Device\STM32F103C8-I.\RTE\_stm32f103-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_MD -D_RTE_-o .\objects\oled.o --omf_browse .\objects\oled.crf --depend .\objects\oled.d)
 I (C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include\stm32f10x.h)(0x61ADDBCE)
 I (.\RTE\_stm32f103\RTE_Components.h)(0x6253EFE2)
 I (C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include\core_cm3.h)(0x60D44B52)
@@ -204,7 +204,7 @@ I (C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include\
 I (C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include\cmsis_compiler.h)(0x60D44B52)
 I (C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include\cmsis_armcc.h)(0x60D44B52)
 I (C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include\system_stm32f10x.h)(0x61ADDBCE)
-I (oled.h)(0x62484A3B)
+I (oled.h)(0x64068B99)
 I (i2c.h)(0x62483ACC)
 I (.\FreeRTOS\source\include\FreeRTOS.h)(0x5FD90663)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x602585EE)
@@ -217,7 +217,7 @@ I (.\FreeRTOS\source\include\mpu_wrappers.h)(0x5FD90663)
 I (.\FreeRTOS\source\include\task.h)(0x5FD90663)
 I (.\FreeRTOS\source\include\list.h)(0x5FD90663)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x602585EE)
-F (.\oled.h)(0x62484A3B)()
+F (.\oled.h)(0x64068B99)()
 F (.\output_device.c)(0x628A065A)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I . -I .\FreeRTOS\source\include -I .\FreeRTOS\source\portable\RVDS\ARM_CM3-I.\RTE\Device\STM32F103C8-I.\RTE\_stm32f103-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_MD -D_RTE_-o .\objects\output_device.o --omf_browse .\objects\output_device.crf --depend .\objects\output_device.d)
 I (C:\Users\OLAOLUWA\AppData\Local\Arm\Packs\Keil\STM32F1xx_DFP\2.4.0\Device\Include\stm32f10x.h)(0x61ADDBCE)
 I (.\RTE\_stm32f103\RTE_Components.h)(0x6253EFE2)
