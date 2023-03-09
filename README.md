@@ -40,6 +40,8 @@ to view the source code. The ``APK`` file is also present in the same folder as 
 ![smart_lock_app](https://user-images.githubusercontent.com/46250887/223219502-15954848-4aee-4515-b2ed-a8cfea6cb61c.jpg)  
 
 ## Software architecture  
+![Layered architecture](https://user-images.githubusercontent.com/46250887/224175922-1c03e6f9-ef71-46db-a4cd-f25f12cb3bbb.png)  
+
 The software for the Tamper-Proof Smart Lock was designed using a layered architecture consisting of:   
 
 1. ``Device drivers`` (using CMSIS): UART, I2C, GPIO, DMA, SysTick, Timer, RCC.  
