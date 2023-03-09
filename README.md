@@ -47,7 +47,7 @@ The software for the Tamper-Proof Smart Lock was designed using a layered archit
 1. ``Device drivers`` (using CMSIS): UART, I2C, GPIO, DMA, SysTick, Timer, RCC.  
 2. ``Libraries``: These abstract the device drivers and provide an interface (function calls) for the main application  
 to control devices like the Fingerprint module, OLED, GSM module etc. without the need to know about their hardware configurations.  
-3. ``Main application``: A mix of FreeRTOS and function calls from the ``Libraries`` layer.      
+3. ``Main application``: A mix of ``FreeRTOS`` and function calls from the ``Libraries`` layer.      
 
 ## Hardware / Pinout
 |  N   |  Component     | STM32                            |  
