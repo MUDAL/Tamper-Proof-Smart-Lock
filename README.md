@@ -90,6 +90,14 @@ by longer wires could limit the amount of current the module would draw.
 
 ![20230103_102533](https://user-images.githubusercontent.com/46250887/210335978-96057d95-0fb2-41ab-ae00-ca529f5605fd.jpg)  
 
+## Credits  
+Acknowledgement of existing libraries that were ported and modified to satisfy the smart lock's requirements.   
+1. Adafruit Fingerprint Sensor Library: https://github.com/adafruit/Adafruit-Fingerprint-Sensor-Library  
+2. STM32 Library for OLEDs: https://github.com/afiskon/stm32-ssd1306  
 
-
+## Recommendations  
+1. Power optimization e.g. use of BLE instead of Bluetooth 
+2. Provision of an outlet for backup DC supply  
+3. Provision of a port to enable AC power supply (alternate power source)  
+4. Design and develop a mobile application with better user interface  
 
