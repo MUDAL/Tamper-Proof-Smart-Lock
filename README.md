@@ -56,6 +56,7 @@ The main application is divided into functions, FreeRTOS tasks and a software ti
 
 The algorithm for the main application (functions, FreeRTOS tasks and software timer) is represented with flowcharts. All flowcharts can be found in the ``Flowcharts`` folder in this repo. Some flowcharts (tasks and software timer's callback) are shown below.  
 
+![F5_HMI_Fingerprint_Task](https://user-images.githubusercontent.com/46250887/226143413-92aa7fdf-a847-43f1-a143-5e894cf7376c.png)
 ![F2_Setup_Task](https://user-images.githubusercontent.com/46250887/226143370-f54c4ba2-4985-4355-b15f-042d160b76ed.png) ![F8_Bluetooth_Task](https://user-images.githubusercontent.com/46250887/226143377-b863d344-d3de-4804-9420-9e7272ada38e.png) ![F9_Software_Timer_Callback](https://user-images.githubusercontent.com/46250887/226143385-7540aef9-c5e5-455d-9e04-1ef2e578053e.png) 
 
 ## Mobile application  
