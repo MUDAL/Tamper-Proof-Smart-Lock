@@ -33,9 +33,7 @@ interface (keypad + OLED) to aid man-machine communication.
 3. FreeRTOS (for concurrent execution of tasks).   
 
 ## Software architecture  
-<p align="center">
-  ![Layered architecture](https://user-images.githubusercontent.com/46250887/224175922-1c03e6f9-ef71-46db-a4cd-f25f12cb3bbb.png) 
-</p> 
+![Layered architecture](https://user-images.githubusercontent.com/46250887/224175922-1c03e6f9-ef71-46db-a4cd-f25f12cb3bbb.png){ width="800" height="600" style="display: block; margin: 0 auto" }
 
 The software for the Tamper-Proof Smart Lock was designed using a layered architecture consisting of:   
 
