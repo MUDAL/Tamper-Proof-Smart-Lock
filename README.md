@@ -34,7 +34,7 @@ interface (keypad + OLED) to aid man-machine communication.
 
 ## Software architecture  
 <p align="center">
-  <img width="460" height="300" src="http://www.fillmurray.com/460/300">
+  <img width="460" height="300" src="[http://www.fillmurray.com](https://user-images.githubusercontent.com/46250887/224175922-1c03e6f9-ef71-46db-a4cd-f25f12cb3bbb.png)/460/300">
   ![Layered architecture](https://user-images.githubusercontent.com/46250887/224175922-1c03e6f9-ef71-46db-a4cd-f25f12cb3bbb.png) 
 </p> 
 
