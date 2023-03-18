@@ -56,7 +56,7 @@ The main application is divided into functions, FreeRTOS tasks and a software ti
 
 The algorithm for the main application (functions, FreeRTOS tasks and software timer) is represented with flowcharts. All flowcharts can be found in the ``Flowcharts`` folder in this repo. Some flowcharts (for the tasks and software timer's callback) are shown below.  
 
-![F2_Setup_Task](https://user-images.githubusercontent.com/46250887/226142894-350011ef-5e51-4ae0-91ef-b2a3f26ded06.png) ![F5_HMI_Fingerprint_Task](https://user-images.githubusercontent.com/46250887/226142899-ce99c769-a29f-498c-9dac-63e7bccfa13c.png) ![F6_Buttons_Tamper_Detection_Task](https://user-images.githubusercontent.com/46250887/226142919-4cb7385c-01e4-4b01-af2b-87e6214a570e.png) ![F8_Bluetooth_Task](https://user-images.githubusercontent.com/46250887/226142926-9396477c-d80d-446c-a15b-9d8ffaf74dc0.png) ![F9_Software_Timer_Callback](https://user-images.githubusercontent.com/46250887/226142933-933fd40e-9cfb-4ee1-bf37-3ad427eab305.png)  
+![F2_Setup_Task](https://user-images.githubusercontent.com/46250887/226142894-350011ef-5e51-4ae0-91ef-b2a3f26ded06.png "Setup task") ![F5_HMI_Fingerprint_Task](https://user-images.githubusercontent.com/46250887/226142899-ce99c769-a29f-498c-9dac-63e7bccfa13c.png) ![F6_Buttons_Tamper_Detection_Task](https://user-images.githubusercontent.com/46250887/226142919-4cb7385c-01e4-4b01-af2b-87e6214a570e.png) ![F8_Bluetooth_Task](https://user-images.githubusercontent.com/46250887/226142926-9396477c-d80d-446c-a15b-9d8ffaf74dc0.png) ![F9_Software_Timer_Callback](https://user-images.githubusercontent.com/46250887/226142933-933fd40e-9cfb-4ee1-bf37-3ad427eab305.png)  
 
 ## Mobile application  
 The app was developed using ``MIT App Inventor``. The ``aia`` file can be found in  
