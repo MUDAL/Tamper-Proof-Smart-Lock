@@ -35,7 +35,7 @@ interface (keypad + OLED) to aid man-machine communication.
 ## Software architecture  
 ![Layered architecture](https://user-images.githubusercontent.com/46250887/224175922-1c03e6f9-ef71-46db-a4cd-f25f12cb3bbb.png)  
 
-The software for the Tamper-Proof Smart Lock was designed using a layered architecture consisting of:   
+The software for the Smart Lock was designed using a layered architecture consisting of:   
 
 1. ``Device drivers`` (using CMSIS): UART, I2C, GPIO, DMA, SysTick, Timer, RCC.  
 2. ``Libraries``: These abstract the device drivers and provide an interface (function calls) for the main application  
@@ -86,7 +86,7 @@ to view the source code. The ``APK`` file is also present in the same folder as 
 in order to minimize resistance. This helps in preventing unwanted resets as the resistance introduced    
 by longer wires could limit the amount of current the module would draw.   
 
-## Images of prototype  
+## Images of the prototype  
 
 ![20230214_100150](https://user-images.githubusercontent.com/46250887/218695341-854c8ac2-5f41-40c8-8c51-136155ccb4ab.jpg)
 
