@@ -1,8 +1,8 @@
-# Tamper-proof smart door lock  
+# Native smart door lock  
 
 ## Description  
-The Tamper-Proof Smart Lock is a functional prototype designed and developed for a school project.   
-It is a secure, tamper-proof locking system that can be accessed using multiple options for access control,   
+The Native Smart Lock is a functional prototype designed and developed for a school project.   
+It is a secure, door locking system that can be accessed using multiple options for access control,   
 including fingerprint, keypad, mobile application, and tactile buttons. The system also features tamper   
 detection using an ultrasonic sensor, real-time responses to security breaches via SMS alerts, and a user   
 interface (keypad + OLED) to aid man-machine communication.  
@@ -13,14 +13,14 @@ interface (keypad + OLED) to aid man-machine communication.
 - Indoor and outdoor buttons  
 - Keypad  
 - Mobile app  
-2. Tamper detection via ultrasonic sensor  
+2. Tamper detection via an ultrasonic sensor  
 
 3. Intruder alert via SMS  
 
 4. HMI (Keypad + OLED):    
 - To add/remove fingerprints  
-- To add phone number   
-- To change password   
+- To add a phone number   
+- To change the password   
 
 5. Timekeeping occurrences of intruder and tamper detection using a Real-Time Clock.         
 
