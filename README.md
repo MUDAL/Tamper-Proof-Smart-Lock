@@ -25,7 +25,7 @@ interface (keypad + OLED) to aid man-machine communication.
 5. Timekeeping occurrences of intruder and tamper detection using a Real-Time Clock.         
 
 ## Block diagram  
-![block_diagram drawio](https://user-images.githubusercontent.com/46250887/219887347-b687955b-d9e1-4335-9081-6a45ee540765.png)   
+![block_diagram drawio](https://github.com/MUDAL/Tamper-Proof-Smart-Lock/assets/46250887/f540e1f2-56fd-4c3c-ac55-64456b7fc580)     
 
 ## Software  
 1. Keil uVision 5 for programming the STM32 microcontroller.  
@@ -83,35 +83,27 @@ to view the source code. The ``APK`` file is also present in the same folder as 
 1. The module should be powered with sufficient voltage (4.1 to 4.4v).  
 2. It should also be powered with a supply that can source 2A or more.  
 3. The wires connecting the power pins of the module to the supply should be as short as possible   
-in order to minimize resistance. This helps in preventing unwanted resets as the resistance introduced    
-by longer wires could limit the amount of current the module would draw.   
+to minimize resistance. This helps prevent unwanted resets (the resistance introduced    
+by longer wires could limit the current the module would draw).   
 
 ## Images of the prototype  
-
 ![20230214_100150](https://user-images.githubusercontent.com/46250887/218695341-854c8ac2-5f41-40c8-8c51-136155ccb4ab.jpg)
-
 ![20230214_100155](https://user-images.githubusercontent.com/46250887/218695788-5e97ac57-4694-493b-84dd-bd5a98e1836b.jpg)
-
 ![20230214_100201](https://user-images.githubusercontent.com/46250887/218695384-c2354e53-0bb2-4330-9c62-f33aa4c8f0eb.jpg)
-
 ![20230214_100224](https://user-images.githubusercontent.com/46250887/218695462-d884f2eb-eaef-4798-b935-7daa5b8e202b.jpg)
-
 ![20230103_102348](https://user-images.githubusercontent.com/46250887/210335882-975661a0-fde1-4a5d-8249-8ec0525b2334.jpg)  
-
 ![20230103_102401](https://user-images.githubusercontent.com/46250887/210335912-574271c0-df18-410e-85a2-cb47c12eabd1.jpg)  
-
 ![20230103_102541](https://user-images.githubusercontent.com/46250887/210335947-0569a6c0-065f-4610-aa5f-1f1278c975b3.jpg)  
-
 ![20230103_102533](https://user-images.githubusercontent.com/46250887/210335978-96057d95-0fb2-41ab-ae00-ca529f5605fd.jpg)  
 
 ## Credits  
-Acknowledgement of existing libraries that were ported and modified to satisfy the smart lock's requirements.   
+This section lists the libraries adapted to meet the system's requirements.   
 1. Adafruit Fingerprint Sensor Library: https://github.com/adafruit/Adafruit-Fingerprint-Sensor-Library  
 2. STM32 Library for OLEDs: https://github.com/afiskon/stm32-ssd1306  
 
 ## Recommendations  
-1. Power optimization e.g. use of BLE instead of Bluetooth 
+1. Power optimization (e.g., use of BLE instead of Bluetooth). 
 2. Provision of an outlet for backup DC supply  
 3. Provision of a port to enable AC power supply (alternate power source)  
-4. Design and develop a mobile application with better user interface  
+4. Design and develop a mobile application with a better user interface  
 
