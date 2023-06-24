@@ -87,6 +87,9 @@ to minimize resistance. This helps prevent unwanted resets (the resistance intro
 by longer wires could limit the current the module would draw).   
 
 ## Images of the prototype  
+![20230624_191517](https://github.com/MUDAL/Tamper-Proof-Smart-Lock/assets/46250887/d4ef822b-5945-436c-8350-c2b07900f279)  
+![zzz](https://github.com/MUDAL/Tamper-Proof-Smart-Lock/assets/46250887/7562ec2b-2ebd-41f2-895a-7f4c4dbb9e5d)  
+![zzz3](https://github.com/MUDAL/Tamper-Proof-Smart-Lock/assets/46250887/130b38ab-0034-4016-8ea1-ca5dd125c7d4)  
 ![20230214_100150](https://user-images.githubusercontent.com/46250887/218695341-854c8ac2-5f41-40c8-8c51-136155ccb4ab.jpg)
 ![20230214_100155](https://user-images.githubusercontent.com/46250887/218695788-5e97ac57-4694-493b-84dd-bd5a98e1836b.jpg)
 ![20230214_100201](https://user-images.githubusercontent.com/46250887/218695384-c2354e53-0bb2-4330-9c62-f33aa4c8f0eb.jpg)
